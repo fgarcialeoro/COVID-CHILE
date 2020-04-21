@@ -1,0 +1,42 @@
+library(xlsxjars)
+library(xlsx)
+library(dplyr)
+library(tidyr)
+library(corrplot)
+library(ggplot2)
+library(lubridate)
+library(googleVis)
+library(shiny)
+library(plotly)
+
+
+source("grafico_burbujas_internacional.R")
+source("datos_de_chile.R")
+server <- function(session,input, output) {
+  
+  ##gráfico de muertes vs otras variables
+    output$distPlot <- renderGvis({grafico_bj()})
+    
+  ###gráfico de contagiados por comuna
+    avance_contagiados_t<-avance_contagiados()
+    avance_contagiados_t$"REGION-COMUNA"<-paste(avance_contagiados_t$REGION,avance_contagiados_t$COMUNA,sep="-")
+    
+   observe({
+   x<-avance_contagiados_t
+   x<-filter(x,REGION==input$i_REGION)
+   x<-select(x,COMUNA)
+   updateSelectInput(session,"i_COMUNA","Comuna",choices=unique(x))
+   }) 
+    
+    output$comunas<-renderPlotly({
+    plot_ly(avance_contagiados_t, x = ~Fecha, y = ~`Contagiados cada 100000 habitantes`,type = 'scatter', mode ='lines' ,color = ~`REGION-COMUNA`,
+            text = ~paste(paste("Población:", `Población`),
+                          paste("Comuna:", `COMUNA`),sep="\n"),visible = 'legendonly')%>%
+        layout(title = "Evolución de contagiados cada 100 0000 habitantes por comuna",
+      yaxis = list(title = "Contagiados cada 100 000 habitantes",type="log"))
+    })  
+    
+} 
+
+
+
