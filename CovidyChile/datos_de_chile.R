@@ -142,7 +142,7 @@ tasa_crecimiento<-select(tasa_crecimiento,REGION,COMUNA,`Población`,`Contagiado
 
 
 ######Mapas
-divisiones_administrativas<- readOGR("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/DivisionPoliticoAdministrativa2019/DivisionPoliticaAdministrativa2019.shp", GDAL1_integer64_policy = TRUE)
+divisiones_administrativas<- readOGR("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/CovidyChile/www/DivisionPoliticoAdministrativa2019/DivisionPoliticaAdministrativa2019.shp", GDAL1_integer64_policy = TRUE)
 divisiones <- spTransform(divisiones_administrativas, CRS("+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
 regiones<-unique(divisiones$REGION)
@@ -157,9 +157,9 @@ region_i<-ms_simplify(region_i, keep = 0.001)
 mapa<-rbind(region_i,mapa)}
 
 region_11<-subset(divisiones, divisiones$REGION==regiones[11])
-#region_11<-ms_simplify(region_11, keep = 0.001)
+region_11<-ms_simplify(region_11, keep = 0.001)
 region_12<-subset(divisiones, divisiones$REGION==regiones[12])
-#region_12<-ms_simplify(region_12, keep = 0.001)
+region_12<-ms_simplify(region_12, keep = 0.001)
 
 
 mapa<-rbind(region_11,mapa)
