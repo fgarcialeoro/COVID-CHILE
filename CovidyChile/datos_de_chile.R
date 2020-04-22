@@ -43,98 +43,44 @@ write.csv(avance_contagiados_chile,"www/avance_contagiados_chile.csv",row.names 
 
 
 
-##########################################################################################
-###############estimación a nivel país
-
+########################################################################################################################
+###############estimación a nivel país de variacion de tasa####################################################
+########################################################################################################
 avance_todo_chile<-read.xlsx("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/datos_minsal.xlsx",sheetName ="Avance_nacional")
-avance_todo_chile$Casos.nuevos<-NULL
-avance_todo_chile$Fecha_num<-as.numeric(avance_todo_chile$Fecha)
+colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Casos.confirmados.cada.100000.habitantes")] <- "Casos confirmados acumulados cada 100000 habitantes"
+colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Confirmados.acumulados")] <- "Casos confirmados acumulados"
+write.csv(avance_todo_chile,"www/avance_todo_chile.csv",row.names = FALSE)
 
-
-
-plot(log(Confirmados)~Fecha_num,data=avance_todo_chile) 
-model<-lm(log(Confirmados)~Fecha_num,avance_todo_chile)
-lines(avance_todo_chile$Fecha_num,exp(0.1864*avance_todo_chile$Fecha_num)*exp(2.2319549),lty=2,col="red",lwd=3)
-predict(model) 
+plot(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,data=avance_todo_chile) 
+model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile)
 summary(model)[["coefficients"]]
 
-estimacion<-c()
-estimacion$Fecha<-avance_todo_chile$Fecha[nrow(avance_todo_chile)]
-estimacion<-as.data.frame(estimacion)
-estimacion$Asym<-summary(model)[["coefficients"]][1,1]
-estimacion$Xmid<-summary(model)[["coefficients"]][2,1]
-estimacion$Scal<-summary(model)[["coefficients"]][3,1]
-estimacion$u_Asym<-summary(model)[["coefficients"]][1,2]
-estimacion$u_Xmid<-summary(model)[["coefficients"]][2,2]
-estimacion$u_Scal<-summary(model)[["coefficients"]][3,2]    
+##Variacion de tasa por día.
 
-estimacion$Asym__mas__u_Asym<-estimacion$Asym+estimacion$u_Asym
-estimacion$Asym__menos__u_Asym<-estimacion$Asym-estimacion$u_Asym
-estimacion$Xmid__mas__u_Xmid<-estimacion$Xmid+estimacion$u_Xmid
-estimacion$Xmid__menos__u_Xmid<-estimacion$Xmid-estimacion$u_Xmid
-estimacion$Scal__mas__u_Scal<-estimacion$Scal+estimacion$u_Scal
-estimacion$Scal__menos__u_Scal<-estimacion$Scal-estimacion$u_Scal
+tasa<-c()
+tasa_i<-c()
+dias<-avance_todo_chile$Fecha
 
-estimacion$Fecha<-as.numeric(estimacion$Fecha)
+for (i in 3:length(dias)){
+  avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i])
+  model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+  summary(model)
+  tasa_i$Fecha<-dias[i]
+  tasa_i<-as.data.frame(tasa_i)
+  tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+  tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+  tasa_i$n<-nrow(avance_todo_chile_i)
+  tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+  tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
+  tasa<-rbind(tasa_i,tasa)
+  }
 
-estimacion$term_exp<-exp((estimacion$Xmid-estimacion$Fecha)/estimacion$Scal) 
-estimacion$"Tasa diaria de contagios"<-(estimacion$Asym/estimacion$Scal)*(exp((estimacion$Xmid-estimacion$Fecha)/estimacion$Scal) )/((exp((estimacion$Xmid-estimacion$Fecha)/estimacion$Scal) +1)^2)
-estimacion$uAsym<-(((estimacion$Asym__mas__u_Asym/estimacion$Scal)*(exp((estimacion$Xmid-estimacion$Fecha)/estimacion$Scal) )/((exp((estimacion$Xmid-estimacion$Fecha)/estimacion$Scal) +1)^2))-((estimacion$Asym__menos__u_Asym/estimacion$Scal)*(exp((estimacion$Xmid-estimacion$Fecha)/estimacion$Scal) )/((exp((estimacion$Xmid-estimacion$Fecha)/estimacion$Scal) +1)^2)))/2
-estimacion$uXmid<-(((estimacion$Asym/estimacion$Scal)*(exp((estimacion$Xmid__mas__u_Xmid-estimacion$Fecha)/estimacion$Scal) )/((exp((estimacion$Xmid__mas__u_Xmid-estimacion$Fecha)/estimacion$Scal) +1)^2))   -    ((estimacion$Asym/estimacion$Scal)*(exp((estimacion$Xmid__menos__u_Xmid-estimacion$Fecha)/estimacion$Scal) )/((exp((estimacion$Xmid__menos__u_Xmid-estimacion$Fecha)/estimacion$Scal) +1)^2)))/2
-estimacion$uScal<-(((estimacion$Asym/estimacion$Scal__mas__u_Scal)*(exp((estimacion$Xmid-estimacion$Fecha)/estimacion$Scal__mas__u_Scal) )/((exp((estimacion$Xmid-estimacion$Fecha)/estimacion$Scal__mas__u_Scal) +1)^2))   -   ((estimacion$Asym/estimacion$Scal__menos__u_Scal)*(exp((estimacion$Xmid-estimacion$Fecha)/estimacion$Scal__menos__u_Scal) )/((exp((estimacion$Xmid-estimacion$Fecha)/estimacion$Scal__menos__u_Scal) +1)^2)))/2
-estimacion$"u(Tasa diaria de contagios)"<-sqrt(estimacion$uAsym*estimacion$uAsym+estimacion$uXmid*estimacion$uXmid+estimacion$uScal*estimacion$uScal)
-estimacion$"U(Tasa diaria de contagios), k=2"<-estimacion$"u(Tasa diaria de contagios)"*2
-estimacion$Fecha<-as.Date(estimacion$Fecha,origin = "1970-01-01")
-
-
-
-tasa_crecimiento<-select(avance_todo_chile,Fecha,Confirmados)
-tasa_crecimiento<-na.omit(left_join(estimacion,tasa_crecimiento))
-
-tasa_crecimiento$orden<-NULL
-tasa_crecimiento$Asym<-NULL
-tasa_crecimiento$Xmid<-NULL
-tasa_crecimiento$Scal<-NULL
-tasa_crecimiento$u_Asym<-NULL
-tasa_crecimiento$u_Xmid<-NULL
-tasa_crecimiento$u_Scal<-NULL
-tasa_crecimiento$term_exp<-NULL
-tasa_crecimiento$Asym__mas__u_Asym<-NULL
-tasa_crecimiento$Asym__menos__u_Asym<-NULL
-tasa_crecimiento$Xmid__mas__u_Xmid<-NULL
-tasa_crecimiento$Xmid__menos__u_Xmid<-NULL
-tasa_crecimiento$Scal__mas__u_Scal<-NULL
-tasa_crecimiento$Scal__menos__u_Scal<-NULL
-tasa_crecimiento$uAsym<-NULL
-tasa_crecimiento$uXmid<-NULL
-tasa_crecimiento$uScal<-NULL
-tasa_crecimiento$`ur(Tasa diaria de contagios)`<-tasa_crecimiento$`u(Tasa diaria de contagios)`/tasa_crecimiento$`Tasa diaria de contagios`
-
-
-tasa_crecimiento$"Tasa de crecimiento / %"<-round(100*(tasa_crecimiento$`Tasa diaria de contagios`/tasa_crecimiento$Confirmados),1)
-tasa_crecimiento$"U(Tasa de crecimiento / %), k=2"<-tasa_crecimiento$"Tasa de crecimiento / %"*tasa_crecimiento$`ur(Tasa diaria de contagios)`*2
-
-tasa_crecimientos<-arrange(tasa_crecimiento, desc(`Tasa de crecimiento / %`))
-tasa_crecimiento<-unique(tasa_crecimiento)
-tasa_crecimiento$`Tasa diaria de contagios (contagios cada 100000)`<-round(tasa_crecimiento$`Tasa diaria de contagios (contagios cada 100000)`,1)
-tasa_crecimiento$`Contagiados cada 100000 habitantes`<-round(tasa_crecimiento$`Contagiados cada 100000 habitantes`,1)
-tasa_crecimiento$`U(Tasa de crecimiento / %), k=2`<-round(tasa_crecimiento$`U(Tasa de crecimiento / %), k=2`,1)
-tasa_crecimiento$Fecha<-NULL
-tasa_crecimiento$`u(Tasa diaria de contagios (contagios cada 100000))`<-NULL
-tasa_crecimiento$`ur(Tasa diaria de contagios (contagios cada 100000))`<-NULL
-tasa_crecimiento<-select(tasa_crecimiento,REGION,COMUNA,`Población`,`Contagiados cada 100000 habitantes`,
-                         `Tasa diaria de contagios (contagios cada 100000)`,`U(Tasa diaria de contagios (contagios cada 100000)), k=2`,
-                         `Tasa de crecimiento / %`,`U(Tasa de crecimiento / %), k=2`)
-
-
-
-
-
-
-
-
-
-
+tasa$`Tasa de crecimiento /%`<-tasa$`Tasa de crecimiento`*100
+tasa$`U(Tasa de crecimiento)/%, 95%`<-tasa$`U(Tasa de crecimiento), 95%`*100
+tasa$`Tasa de crecimiento`<-NULL
+tasa$`u(Tasa de crecimiento)`<-NULL
+tasa$`U(Tasa de crecimiento), 95%`<-NULL
+write.csv(tasa,"www/tasa_crecimiento_nacional.csv",row.names = FALSE)
 
 
 
