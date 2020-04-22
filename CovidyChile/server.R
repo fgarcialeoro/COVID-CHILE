@@ -18,7 +18,10 @@ library(stringr)
 library(stringi)
 library(GGally)
 
-
+Verde_oscuro<-rgb(73,79,14,maxColorValue=255)
+Azul_claro<-rgb(0,71,130, maxColorValue=255)
+Rojo<-rgb(143,19,14, maxColorValue=255)
+Verde_claro<-rgb(198,206,6,maxColorValue=255)
 
 server <- function(session,input, output) {
   #source("grafico_burbujas_internacional.R")
@@ -74,11 +77,42 @@ output$matriz <- renderPlot(
       
       if(input$i_ESCALAY =="Lineal"){escala<-scale_y_continuous()} else {escala<-scale_y_log10()}
       
-      m<-ggplot(filter(avance_contagiados_t,`REGION-COMUNA` %in% input$i_REGION_COMUNA) , aes(Fecha,`Contagiados cada 100000 habitantes`,color = `REGION-COMUNA`))+geom_line(linetype=3,size = 0.1)+geom_point()
+      m<-ggplot(filter(avance_contagiados_t,`REGION-COMUNA` %in% input$i_REGION_COMUNA) , aes(Fecha,`Contagiados cada 100000 habitantes`,color = `REGION-COMUNA`))+geom_point()
       m<-m+ggtitle("Valor acumulado de casos confirmados")+escala
       m<-ggplotly(m)
       m
             }) 
+     
+     
+     ###gráfico de contagiados a nivel nacional
+     
+     output$nacional<-renderPlotly({
+       
+       avance_contagiados_nacional<-read.csv("www/avance_todo_chile.csv",check.names = FALSE)
+       colnames(avance_contagiados_nacional)[which(names(avance_contagiados_nacional) == "Contagiados.cada.100000.habitantes")] <- "Contagiados cada 100000 habitantes"
+       avance_contagiados_nacional$Fecha<-as.Date(avance_contagiados_nacional$Fecha)
+       avance_contagiados_t<-avance_contagiados_nacional
+       
+       w<-ggplot(avance_contagiados_t,aes(Fecha,`Contagiados cada 100000 habitantes`))+geom_point(color=Verde_oscuro)
+       w<-w+ggtitle("Valor acumulado de casos confirmados por cada 100000 habitantes")
+       w<-ggplotly(w)
+       w
+     }) 
+     
+     
+     output$var_tasa<-renderPlotly({
+       
+       tasa_crecimiento_nacional<-read.csv("www/tasa_crecimiento_nacional.csv",check.names = FALSE)
+       tasa_crecimiento_nacional$Fecha<-as.Date(tasa_crecimiento_nacional$Fecha)
+       r<-ggplot(tasa_crecimiento_nacional,aes(Fecha,`Tasa de crecimiento / %`))+geom_line(color=Rojo)
+       r<-r+ggtitle("Tasa de crecimiento vs tiempo")
+       r<-ggplotly(r)
+       r
+     }) 
+     
+     
+     
+     
      
       
     output$crecimiento<-renderDataTable({

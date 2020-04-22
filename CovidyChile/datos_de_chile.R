@@ -48,7 +48,7 @@ write.csv(avance_contagiados_chile,"www/avance_contagiados_chile.csv",row.names 
 
 avance_todo_chile<-read.xlsx("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/datos_minsal.xlsx",sheetName ="Avance_nacional")
 avance_todo_chile$Casos.nuevos<-NULL
-avance_todo_chile$Fecha_num<-as.numeric(avance_todo_chile$Fecha)-18324
+avance_todo_chile$Fecha_num<-as.numeric(avance_todo_chile$Fecha)
 
 
 
@@ -211,15 +211,16 @@ for (i in (1:length(fechas))){
 ################################################################################################################################
 ################################################################################################################################
 ################################################################################################################################
-
+   
 
 comunas<-unique(avance_contagiados_chile$COMUNA)
-estimacion_i<-c()
+
 estimacion<-c()
 
 for (i in (1:length(comunas))){
-
+i<-1
   comuna_i<-filter(avance_contagiados_chile,COMUNA==comunas[i])
+  comuna_i<-filter(comuna_i,`Contagiados cada 100000 habitantes`>0)
   
 try({
   
@@ -246,9 +247,10 @@ try({
     estimacion_i$u_Intercepto<-summary(model)[["coefficients"]][1,2]
     estimacion_i$Tasa<-summary(model)[["coefficients"]][2,1]
     estimacion_i$u_Tasa<-summary(model)[["coefficients"]][2,2]
+    estimacion_i$n<-nrow(estimacion_i)
+    estimacion_i$gl<-nrow(estimacion_i)-2
+    estimacion_i$factor_t<-qt(1-0.05/2, estimacion_i$gl)
     
-    
-    estimacion_i<-as.data.frame(estimacion_i)
   }}, silent=TRUE)
   
 estimacion<-rbind(estimacion_i,estimacion)
@@ -256,8 +258,6 @@ rm(model)
 print(i)
 } 
 
-grados_de_libertad<-length(unique(avance_contagiados_chile$Fecha))-2
-factor_t<-qt(1-0.05/2, grados_de_libertad)
 
 tasa_crecimiento<-select(avance_contagiados_chile,Fecha,REGION, COMUNA,"Población",`Contagiados cada 100000 habitantes`)
 tasa_crecimiento<-na.omit(left_join(estimacion,tasa_crecimiento))

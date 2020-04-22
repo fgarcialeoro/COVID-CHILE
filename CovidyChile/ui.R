@@ -14,6 +14,13 @@ library(sp)
 library(shinyWidgets)
 library(stringi)
 
+Verde_oscuro<-rgb(73,79,14,maxColorValue=255)
+Azul_claro<-rgb(0,71,130, maxColorValue=255)
+Rojo<-rgb(143,19,14, maxColorValue=255)
+Verde_claro<-rgb(198,206,6,maxColorValue=255)
+
+
+
 ui <- fluidPage(  
     
   
@@ -67,13 +74,24 @@ ui <- fluidPage(
                    )
                  ),
         
+        
+        tabPanel("Casos confirmados acumulados a nivel nacional",
+                 mainPanel(
+                   plotlyOutput("nacional"),br(),br(),
+                   plotlyOutput("var_tasa"),div("En este gráfico se presenta la tasa de crecimiento 
+                                                          evaluada para cada día, con los datos disponibles hasta ese día,
+                                                          utilizando un modelo exponencial"),br()
+                 )
+        ),
+        
         tabPanel("Mundo: COVID y otros indicadores",
                  
                  mainPanel(
-                   div(strong("Variación del número de fallecidos e infectados a nivel internacional, en relación con variables económicas y de movilidad de apple"),"Aun cuando los valores se estabilizarán en el mediano plazo, ya es posible apreciar algunas tendencias.El usuario debe seleccionar las variables. La fuente de las variables económicas es el Banco Mundial y los valores corresponden al año 2018; están fijos.  Los índices de movilidad de Apple originales están en https://www.apple.com/covid19/mobility"),
-                   htmlOutput("distPlot"),
                    div(strong("Variación del número de fallecidos a nivel internacional, en relación con variables económicas"),"Aun cuando los valores se estabilizarán en el mediano plazo, ya es posible apreciar algunas tendencias. El círculo rojo representa a Chile."),
-                   plotOutput("matriz")
+                   plotOutput("matriz"),br(),br(),
+                   div(strong("Variación del número de fallecidos e infectados a nivel internacional, en relación con variables económicas y de movilidad de apple"),"Aun cuando los valores se estabilizarán en el mediano plazo, ya es posible apreciar algunas tendencias.El usuario debe seleccionar las variables. La fuente de las variables económicas es el Banco Mundial y los valores corresponden al año 2018; están fijos.  Los índices de movilidad de Apple originales están en https://www.apple.com/covid19/mobility"),
+                   htmlOutput("distPlot")
+                   
                    )
                  )
        
