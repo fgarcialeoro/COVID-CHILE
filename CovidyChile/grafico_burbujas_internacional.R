@@ -30,6 +30,9 @@ gobernanza$`Control of Corruption: Estimate`<-NULL
 gobernanza$`Government Effectiveness: Estimate`<-NULL
 gobernanza$`Regulatory Quality: Estimate`<-NULL
 gobernanza$`Voice and Accountability: Estimate`<-NULL
+gobernanza$`Regulatory Quality, percentil`<-NULL
+gobernanza$`Voice and Accountability, percentil`<-NULL
+
 
 colnames(gobernanza)[which(names(gobernanza) == "Control of Corruption: Percentile Rank")] <- "Corruption control, percentil"
 colnames(gobernanza)[which(names(gobernanza) == "Government Effectiveness: Percentile Rank")] <- "Government Effectiveness, percentil"
@@ -61,6 +64,7 @@ desarrollo$`Time to start a business`<-NULL
 desarrollo$`Tuberculosis case detection rate (%, all forms)`<-NULL
 desarrollo$`Surface area (sq. km)`<-NULL
 desarrollo$`Time required to start a business (days)`<-NULL
+desarrollo$
 
 colnames(desarrollo)[which(names(desarrollo) == "Control of Corruption: Estimate")] <- "Corruption control"
 colnames(desarrollo)[which(names(desarrollo) == "Political Stability and Absence of Violence/Terrorism: Estimate")] <- "Political Stability"
@@ -150,5 +154,13 @@ write.csv(avance_2,"www/datos_paises.csv",row.names = FALSE)
 rm(avance,avance_infectados,avance_muertes,desarrollo)
 
 
+avance_2_hoy<-filter(avance_2,avance_2$Date==as.Date("2020-04-21"))
+avance_2_hoy<-filter(avance_2_hoy,`Deaths per 100000 inhabitants`>0)
+avance_2_hoy<-filter(avance_2_hoy,avance_2_hoy$`Government Effectiveness, percentil`>65)
+chile<-filter(avance_2_hoy,`Country Name`=="Chile")
+g<-ggplot(avance_2_hoy,aes(`Government Effectiveness, percentil`,`Deaths per 100000 inhabitants`, label = `Country Name`))+geom_point()
+g<-g+geom_point(data=chile,colour="blue",size=1.4)+geom_text(size = 2.5,vjust = 0.1, nudge_y = 0.05,angle=10)
+g<-g+scale_y_log10()
+g
 
 
