@@ -52,7 +52,7 @@ cols[datos_paises$`Population above 65 [%]`==	23.01721] <-"red"
 cols[datos_paises$`Government Effectiveness, percentil`==81.73077]<-"red"
 
 output$matriz <- renderPlot(
-  pairs( ~log(`Deaths per 100000 inhabitants`)+log(`Science and Tech articles`)+log(`GDP per capita [USD]`)+`Population above 65 [%]`+log(`Government Effectiveness, percentil`),filter(datos_paises,Date==max(datos_paises$Date)),col=cols) 
+  pairs( ~log(`Deaths per 100000 inhabitants`)+log(`Science and Tech articles`)+log(`GDP per capita [USD]`)+`Population above 65 [%]`+(`Government Effectiveness, percentil`),filter(datos_paises,Date==max(datos_paises$Date)),col=cols) 
   
 )
  
