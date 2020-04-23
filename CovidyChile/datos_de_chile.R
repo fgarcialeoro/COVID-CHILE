@@ -43,8 +43,8 @@ write.csv(avance_contagiados_chile,"www/avance_contagiados_chile.csv",row.names 
 
 
 
-########################################################################################################################
-###############estimación a nivel país de variacion de tasa####################################################
+########################################################################################################
+###############estimación a nivel país de variacion de tasa#############################################
 ########################################################################################################
 avance_todo_chile<-read.xlsx("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/datos_minsal.xlsx",sheetName ="Avance_nacional")
 colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Casos.confirmados.cada.100000.habitantes")] <- "Casos confirmados acumulados cada 100000 habitantes"
@@ -55,13 +55,15 @@ plot(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,data=avanc
 model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile)
 summary(model)[["coefficients"]]
 
-##Variacion de tasa por día.
+
 
 tasa<-c()
 tasa_i<-c()
 dias<-avance_todo_chile$Fecha
 
 for (i in 3:length(dias)){
+  
+  if(i<=10){
   avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i])
   model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
   summary(model)
@@ -73,6 +75,22 @@ for (i in 3:length(dias)){
   tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
   tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
   tasa<-rbind(tasa_i,tasa)
+  }else{
+    avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
+    model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+    summary(model)
+    tasa_i$Fecha<-dias[i]
+    tasa_i<-as.data.frame(tasa_i)
+    tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+    tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+    tasa_i$n<-nrow(avance_todo_chile_i)
+    tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+    tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
+    tasa<-rbind(tasa_i,tasa)
+    
+  }
+  
+  
   }
 
 tasa$`Tasa de crecimiento /%`<-tasa$`Tasa de crecimiento`*100
@@ -83,11 +101,10 @@ tasa$`U(Tasa de crecimiento), 95%`<-NULL
 write.csv(tasa,"www/tasa_crecimiento_nacional.csv",row.names = FALSE)
 
 
+################################################################################################
+##############################Mapas por comuna##################################################
+################################################################################################
 
-
-
-
-######Mapas
 divisiones_administrativas<- readOGR("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/CovidyChile/www/DivisionPoliticoAdministrativa2019/DivisionPoliticaAdministrativa2019.shp", GDAL1_integer64_policy = TRUE)
 divisiones <- spTransform(divisiones_administrativas, CRS("+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
@@ -103,9 +120,9 @@ region_i<-ms_simplify(region_i, keep = 0.001)
 mapa<-rbind(region_i,mapa)}
 
 region_11<-subset(divisiones, divisiones$REGION==regiones[11])
-region_11<-ms_simplify(region_11, keep = 0.001)
+#region_11<-ms_simplify(region_11, keep = 0.001)
 region_12<-subset(divisiones, divisiones$REGION==regiones[12])
-region_12<-ms_simplify(region_12, keep = 0.001)
+#region_12<-ms_simplify(region_12, keep = 0.001)
 
 
 mapa<-rbind(region_11,mapa)
@@ -118,9 +135,6 @@ mapa@data$COMUNA<-gsub("Los Angeles","Los Ángeles",mapa@data$COMUNA,fixed = TRU
 
 fechas<-unique(avance_contagiados_chile$Fecha)
 regiones<-unique(avance_contagiados_chile$REGION)
-
-
-
 for (i in (1:length(fechas))){
   avance_contagiados_chile_i<-subset(avance_contagiados_chile, avance_contagiados_chile$Fecha==fechas[i])
   
@@ -132,15 +146,9 @@ for (i in (1:length(fechas))){
     saveRDS(mapa_i_j,paste("www/mapas/mapa_chile",toupper(stri_trans_general(regiones[j], "Latin-ASCII")),fechas[i],sep="-"))
     }
   }
- 
+rm(mapa,mapa_i_j,region_11,region_12,region_i,mapa_j,avance_contagiados_chile_i,avance_contagiados_chile_i_j,divisiones,divisiones_administrativas)
 
 
-#for (i in (1:length(fechas))){
-#  avance_contagiados_chile_i<-subset(avance_contagiados_chile, avance_contagiados_chile$Fecha==fechas[i])
-# mapa_i<-mapa
-# mapa_i@data<-left_join(mapa_i@data,avance_contagiados_chile_i,by=c("COMUNA","REGION"))
-# saveRDS(mapa_i,paste("www/mapas/mapa_chile",fechas[i],sep="-"))
-# }
 
 
 ################################################################################################################################
@@ -158,51 +166,61 @@ for (i in (1:length(fechas))){
 ################################################################################################################################
 ################################################################################################################################
    
-
 comunas<-unique(avance_contagiados_chile$COMUNA)
 
 estimacion<-c()
+estimacion_i<-c()
+
 
 for (i in (1:length(comunas))){
-i<-1
+
   comuna_i<-filter(avance_contagiados_chile,COMUNA==comunas[i])
   comuna_i<-filter(comuna_i,`Contagiados cada 100000 habitantes`>0)
+  
   
 try({
   
   if(comuna_i$`Contagiados cada 100000 habitantes`[nrow(comuna_i)]==0 | max(comuna_i$`Contagiados cada 100000 habitantes`) > comuna_i$`Contagiados cada 100000 habitantes`[nrow(comuna_i)] ){
   
-  estimacion_i$Fecha<-max(comuna_i$Fecha)
-  estimacion_i$REGION<-comuna_i$REGION[1]
-  estimacion_i$COMUNA<-comuna_i$COMUNA[1]
-  estimacion_i$Intercepto<-NA
-  estimacion_i$u_Intercepto<-NA
-  estimacion_i$Tasa<-NA
-  estimacion_i$u_Tasa<-NA
-  estimacion_i<-as.data.frame(estimacion_i)}
+    estimacion_i$Fecha<-max(comuna_i$Fecha)
+    estimacion_i<-as.data.frame(estimacion_i)
+    estimacion_i$REGION<-comuna_i$REGION[1]
+    estimacion_i$COMUNA<-comuna_i$COMUNA[1]
+    estimacion_i$Intercepto<-NA
+    estimacion_i$u_Intercepto<-NA
+    estimacion_i$"Tasa de crecimiento"<-NA
+    estimacion_i$u_Tasa<-NA
+    estimacion_i$n<-NA
+    estimacion_i$gl<-NA
+    estimacion_i$factor_t<<-NA
+    estimacion_i$"U(Tasa de crecimiento), 95%"<-NA
+  }
   else{
     
-    plot(`Contagiados cada 100000 habitantes`~ as.numeric(Fecha),data=comuna_i)
-    model<-lm(log(`Contagiados cada 100000 habitantes`)~as.numeric(Fecha),data=comuna_i)
+    model<-lm(log(`Contagiados cada 100000 habitantes`)~Fecha,data=comuna_i)
     summary(model)[["coefficients"]]
-    
+    plot(log(comuna_i$`Contagiados cada 100000 habitantes`)~Fecha,comuna_i)
     estimacion_i$Fecha<-max(comuna_i$Fecha)
+    estimacion_i<-as.data.frame(estimacion_i)
     estimacion_i$REGION<-comuna_i$REGION[1]
     estimacion_i$COMUNA<-comuna_i$COMUNA[1]
     estimacion_i$Intercepto<-summary(model)[["coefficients"]][1,1]
     estimacion_i$u_Intercepto<-summary(model)[["coefficients"]][1,2]
-    estimacion_i$Tasa<-summary(model)[["coefficients"]][2,1]
+    estimacion_i$"Tasa de crecimiento"<-summary(model)[["coefficients"]][2,1]
     estimacion_i$u_Tasa<-summary(model)[["coefficients"]][2,2]
-    estimacion_i$n<-nrow(estimacion_i)
-    estimacion_i$gl<-nrow(estimacion_i)-2
+    estimacion_i$n<-nrow(comuna_i)
+    estimacion_i$gl<-nrow(comuna_i)-2
     estimacion_i$factor_t<-qt(1-0.05/2, estimacion_i$gl)
-    
+    estimacion_i$"U(Tasa de crecimiento), 95%"<-(estimacion_i$u_Tasa/sqrt(estimacion_i$n))*estimacion_i$factor_t
+    estimacion_i$"Tasa de crecimiento/%"<-estimacion_i$"Tasa de crecimiento"*100
+    estimacion_i$"U(Tasa de crecimiento)/%, 95%"<-estimacion_i$"U(Tasa de crecimiento), 95%"*100
   }}, silent=TRUE)
   
 estimacion<-rbind(estimacion_i,estimacion)
 rm(model)
 print(i)
 } 
+rm(comuna_i,estimacion_i)
 
 
 tasa_crecimiento<-select(avance_contagiados_chile,Fecha,REGION, COMUNA,"Población",`Contagiados cada 100000 habitantes`)
@@ -210,17 +228,21 @@ tasa_crecimiento<-na.omit(left_join(estimacion,tasa_crecimiento))
 
 tasa_crecimiento$Intercepto<-NULL
 tasa_crecimiento$u_Intercepto<-NULL
-tasa_crecimiento<-select(tasa_crecimiento,Fecha,REGION,COMUNA,Población,`Contagiados cada 100000 habitantes`,
-                         Tasa,u_Tasa)
-
-tasa_crecimiento$"Tasa de crecimiento / %"<-round(100*tasa_crecimiento$Tasa,1)
-tasa_crecimiento$"U(Tasa de crecimiento / %, 95%)"<-round(100*tasa_crecimiento$u_Tasa*factor_t/sqrt(grados_de_libertad+2),1)
-tasa_crecimiento$Tasa<-NULL
 tasa_crecimiento$u_Tasa<-NULL
+tasa_crecimiento$n<-NULL
+tasa_crecimiento$gl<-NULL
+tasa_crecimiento$factor_t<-NULL
+tasa_crecimiento$`U(Tasa de crecimiento), 95%`<-NULL
+tasa_crecimiento$`Tasa de crecimiento`<-NULL
+
+tasa_crecimiento<-select(tasa_crecimiento,REGION,COMUNA,Población,`Contagiados cada 100000 habitantes`,`Tasa de crecimiento/%`,`U(Tasa de crecimiento)/%, 95%`)
 tasa_crecimiento$`Contagiados cada 100000 habitantes`<-round(tasa_crecimiento$`Contagiados cada 100000 habitantes`,1)
-tasa_crecimiento<-arrange(tasa_crecimiento, desc(`Tasa de crecimiento / %`))
-tasa_crecimiento<-filter(tasa_crecimiento,`Tasa de crecimiento / %`>0)
+tasa_crecimiento$`Tasa de crecimiento/%`<-round(tasa_crecimiento$`Tasa de crecimiento/%`,1)
+tasa_crecimiento$`U(Tasa de crecimiento)/%, 95%`<- round(tasa_crecimiento$`U(Tasa de crecimiento)/%, 95%`,1)
+tasa_crecimiento<-filter(tasa_crecimiento,`Tasa de crecimiento/%`>0)
 tasa_crecimiento<-unique(tasa_crecimiento)
+tasa_crecimiento<-arrange(tasa_crecimiento, desc(`Tasa de crecimiento/%`))
+
 
 write.csv(tasa_crecimiento,"www/tasa_crecimiento.csv",row.names = FALSE)
 

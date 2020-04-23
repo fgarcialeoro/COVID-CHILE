@@ -13,6 +13,7 @@ library(leaflet)
 library(sp)
 library(shinyWidgets)
 library(stringi)
+library(DT)
 
 Verde_oscuro<-rgb(73,79,14,maxColorValue=255)
 Azul_claro<-rgb(0,71,130, maxColorValue=255)
@@ -62,8 +63,8 @@ ui <- fluidPage(
                                                 "Biobio","La Araucania","Los Rios","Los Lagos",
                                                   "Aysen del General Carlos Ibanez del Campo",
                                                    "Magallanes y de la Antartica Chilena")),selected=toupper(c("Metropolitana de Santiago"))),
-                     sliderInput("i_FECHA","Fecha",min=as.Date("2020-03-30"),max=as.Date("2020-04-17"),value=as.Date("2020-04-17"), ticks=FALSE),
-                     #selectInput("i_FECHA","Fecha",choices=c("2020-03-30","2020-04-01","2020-04-03","2020-04-06","2020-04-08","2020-04-10","2020-04-15","2020-04-17"),selected="2020-04-17"),
+                     #sliderInput("i_FECHA","Fecha",min=as.Date("2020-03-30"),max=as.Date("2020-04-20"),value=as.Date("2020-04-20"), ticks=FALSE),
+                     selectInput("i_FECHA","Fecha",choices=c("2020-03-30","2020-04-01","2020-04-03","2020-04-06","2020-04-08","2020-04-10","2020-04-15","2020-04-17","2020-04-20"),selected="2020-04-20"),
                      img(src ="logocsc.png", align = "center"),
                      uiOutput("tab1")
                      ),
@@ -78,9 +79,7 @@ ui <- fluidPage(
         tabPanel("Casos confirmados acumulados a nivel nacional",
                  mainPanel(
                    plotlyOutput("nacional"),br(),br(),
-                   plotlyOutput("var_tasa"),div("En este gráfico se presenta la tasa de crecimiento 
-                                                          evaluada para cada día, con los datos disponibles hasta ese día,
-                                                          utilizando un modelo exponencial"),br()
+                   plotlyOutput("var_tasa"),div("En este gráfico se presenta la tasa de crecimiento evaluada para cada día, utilizando un modelo exponencial.  Hasta el día 10 se consideraron todos los días previos, luego se tomaron en cuenta rangos de cinco días"),br()
                  )
         ),
         
@@ -89,7 +88,7 @@ ui <- fluidPage(
                  mainPanel(
                    div(strong("Variación del número de fallecidos a nivel internacional, en relación con variables económicas"),"Aun cuando los valores se estabilizarán en el mediano plazo, ya es posible apreciar algunas tendencias. El círculo rojo representa a Chile."),
                    plotOutput("matriz"),br(),br(),
-                   div(strong("Variación del número de fallecidos e infectados a nivel internacional, en relación con variables económicas y de movilidad de apple"),"Aun cuando los valores se estabilizarán en el mediano plazo, ya es posible apreciar algunas tendencias.El usuario debe seleccionar las variables. La fuente de las variables económicas es el Banco Mundial y los valores corresponden al año 2018; están fijos.  Los índices de movilidad de Apple originales están en https://www.apple.com/covid19/mobility"),
+                   div(strong("Variación del número de fallecidos e infectados a nivel internacional, en relación con variables económicas y de movilidad de apple"),"Aun cuando los valores se estabilizarán en el mediano plazo, ya es posible apreciar algunas tendencias.El usuario debe seleccionar las variables. La fuente de las variables económicas es el Banco Mundial y los valores corresponden al año 2018; están fijos."),
                    htmlOutput("distPlot")
                    
                    )

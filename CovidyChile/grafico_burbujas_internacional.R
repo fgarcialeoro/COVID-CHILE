@@ -120,24 +120,20 @@ avance_2$"Deaths per 100000 inhabitants"<-(avance_2$Deaths/avance_2$Population)*
 avance_2<-na.omit(avance_2)
 
 
-ultima_movimiento<-colnames(movimiento)[ncol(movimiento)]
+#ultima_movimiento<-colnames(movimiento)[ncol(movimiento)]
 
-movimiento<-gather(movimiento,key="Date",value="Solicitudes","2020-01-13":ultima_movimiento)
-movimiento<-filter(movimiento,geo_type=="country/region")
-movimiento$geo_type<-as.character(movimiento$geo_type)
-movimiento$region<-as.character(movimiento$region)
-movimiento$transportation_type<-as.character(movimiento$transportation_type)
-movimiento$`Country Name`<-movimiento$`region`
-movimiento$region<-NULL
-movimiento$geo_type<-NULL
-movimiento<-spread(movimiento,transportation_type,Solicitudes)
-movimiento$transit<-NULL
-movimiento$Date<-as.Date(movimiento$Date)
+#movimiento<-gather(movimiento,key="Date",value="Solicitudes","2020-01-13":ultima_movimiento)
+#movimiento<-filter(movimiento,geo_type=="country/region")
+#movimiento$geo_type<-as.character(movimiento$geo_type)
+#movimiento$region<-as.character(movimiento$region)
+#movimiento$transportation_type<-as.character(movimiento$transportation_type)
+#movimiento$`Country Name`<-movimiento$`region`
+#movimiento$region<-NULL
+#movimiento$geo_type<-NULL
+#movimiento<-spread(movimiento,transportation_type,Solicitudes)
+#movimiento$transit<-NULL
+#movimiento$Date<-as.Date(movimiento$Date)
 
-
-avance_2<-left_join(avance_2,movimiento)
-avance_2<-na.omit(avance_2)
-avance_2$`Country Code`<-NULL
 
 avance_2<-left_join(avance_2,gobernanza)
 avance_2<-na.omit(avance_2)
