@@ -1,0 +1,33 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1587700375843.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "D4F450E",
+    "lastKnownWriteTime" : 1587699528,
+    "last_content_update" : 1587700375843,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "D322FE64",
+        "caption" : "examenes_diarios",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=examenes_diarios&cache_key=D322FE64",
+        "displayedObservations" : "16",
+        "environment" : "",
+        "expression" : "examenes_diarios",
+        "object" : "examenes_diarios",
+        "preview" : "0",
+        "totalObservations" : "16",
+        "variables" : "17"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

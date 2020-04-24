@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1587699513201.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4140744462",
+    "id" : "953F2883",
+    "lastKnownWriteTime" : 1587700993,
+    "last_content_update" : 1587700993034,
+    "path" : "~/Dropbox/working directory R/COVID CHILE/CovidyChile/SIR.R",
+    "project_path" : "CovidyChile/SIR.R",
+    "properties" : {
+        "cursorPosition" : "33,2",
+        "scrollLine" : "12"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

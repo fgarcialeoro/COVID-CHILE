@@ -18,6 +18,26 @@ library(stringi)
 setwd("~/Dropbox/working directory R/COVID CHILE/CovidyChile")
 
 
+examenes_diarios<-read.csv("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/Datos-COVID19/output/producto7/PCR.csv",check.names = FALSE,header = TRUE)
+
+casos_confirmados<-read.csv("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/Datos-COVID19/output/producto4/2020-03-20-CasosConfirmados-totalRegional.csv",check.names = FALSE,header = TRUE)
+
+lista<-list.files("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/Datos-COVID19/output/producto4/")
+
+
+for (i in 1:length(lista)){
+  
+  cmc_i<-read.xlsx(paste("cmcs2020_02/Mass and related quantities/",lista[i],sep=""), sheetName = "RECEPTION CMCs",check.names=FALSE)
+  
+  posicion<-which(cmc_i == "Measurement method", arr.ind=TRUE)
+  posicion<-posicion[1,][1]-1
+  
+
+
+
+cmc<-c()
+cmc<-as.data.frame(cmc)
+
 avance_contagiados_chile<-read.csv("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/Datos-COVID19/output/producto1/Covid-19.csv",check.names = FALSE,header = TRUE)
 
 

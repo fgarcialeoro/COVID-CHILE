@@ -1,0 +1,1458 @@
+options(java.parameters = "-Xmx12000m",scipen=999)
+library(xlsx)
+library(dplyr)
+library(tidyr)
+library(rJava)
+library(stringr)
+library(ggplot2)
+library(plotly)
+library(scales)
+library(rmarkdown)
+library(shiny)
+
+CMCsmasa_y_magnitudes_relacionadas<- function(){
+
+
+
+lista<-list.files("cmcs2020_02/Mass and related quantities")
+cmc<-c()
+cmc<-as.data.frame(cmc)
+
+
+for (i in 1:length(lista)){
+  
+  cmc_i<-read.xlsx(paste("cmcs2020_02/Mass and related quantities/",lista[i],sep=""), sheetName = "RECEPTION CMCs",check.names=FALSE)
+  
+  posicion<-which(cmc_i == "Measurement method", arr.ind=TRUE)
+  posicion<-posicion[1,][1]-1
+  
+  
+  cmc_i<-cmc_i[-c(1:posicion), ]
+  
+  
+  rownames(cmc_i) <- 1:nrow(cmc_i)
+  colnames(cmc_i) <-as.character(unlist(cmc_i[1,]))
+  
+  cmc_i= cmc_i[-1, ]
+  rownames(cmc_i) <- 1:nrow(cmc_i)
+  
+  cmc_i$TAG<-"Mass and related quantities"
+  
+  cmc_i<-data.frame(lapply(cmc_i, as.character),check.names = FALSE)
+  
+  colnames(cmc_i)[14]<-"E U Unit"
+  
+  cmc<-rbind(cmc,cmc_i)
+}
+
+cmc<-mutate_all(cmc,as.character)
+
+
+cmc$`Measurand Minimum value`<-as.numeric(cmc$`Measurand Minimum value`)
+cmc$`Measurand Maximum value`<-as.numeric(cmc$`Measurand Maximum value`)
+cmc$`Expanded uncertainty Minimum value`<-as.numeric(cmc$`Expanded uncertainty Minimum value`)
+cmc$`Expanded uncertainty Maximum value`<-as.numeric(cmc$`Expanded uncertainty Maximum value`)
+
+cmc$`Coverage factor`<-as.numeric(cmc$`Coverage factor`)
+
+unique(cmc$Unit)
+#####################################
+cmc_mg<-filter(cmc,Unit=="mg")
+cmc_mg$`Measurand Minimum value`<-(1/1000000)*cmc_mg$`Measurand Minimum value`
+cmc_mg$`Measurand Maximum value`<-(1/1000000)*cmc_mg$`Measurand Maximum value`
+cmc_mg$Unit<-"kg"
+
+cmc_g<-filter(cmc,Unit=="g")
+cmc_g$`Measurand Minimum value`<-(1/1000)*cmc_g$`Measurand Minimum value`
+cmc_g$`Measurand Maximum value`<-(1/1000)*cmc_g$`Measurand Maximum value`
+cmc_g$Unit<-"kg"
+
+
+cmc_kg<-filter(cmc,Unit=="kg")
+cmc_kg$`Measurand Minimum value`<-cmc_kg$`Measurand Minimum value`
+cmc_kg$`Measurand Maximum value`<-cmc_kg$`Measurand Maximum value`
+cmc_kg$Unit<-"kg"
+
+
+
+cmc_kN<-filter(cmc,Unit=="kN")
+cmc_kN$`Measurand Minimum value`<-1000*cmc_kN$`Measurand Minimum value`
+cmc_kN$`Measurand Maximum value`<-1000*cmc_kN$`Measurand Maximum value`
+cmc_kN$Unit<-"N"
+
+
+
+cmc_N<-filter(cmc,Unit=="N")
+cmc_N$Unit<-"N"
+
+cmc_MN<-filter(cmc,Unit=="MN")
+cmc_MN$`Measurand Minimum value`<-1000000*cmc_MN$`Measurand Minimum value`
+cmc_MN$`Measurand Maximum value`<-1000000*cmc_MN$`Measurand Maximum value`
+cmc_MN$Unit<-"N"
+
+cmc_N_p_M<-filter(cmc,Unit=="N/m")
+cmc_N_p_M$Unit<-"N/m"
+
+
+cmc_Nm<-filter(cmc,Unit=="N m")
+cmc_Nm$`Measurand Minimum value`<-1*cmc_Nm$`Measurand Minimum value`
+cmc_Nm$`Measurand Maximum value`<-1*cmc_Nm$`Measurand Maximum value`
+cmc_Nm$Unit<-"N m"
+
+cmc_kNm<-filter(cmc,Unit=="kN m")
+cmc_kNm$`Measurand Minimum value`<-1000*cmc_kNm$`Measurand Minimum value`
+cmc_kNm$`Measurand Maximum value`<-1000*cmc_kNm$`Measurand Maximum value`
+cmc_kNm$Unit<-"N m"
+
+
+
+cmc_g_cm3<-filter(cmc,Unit=="g/cm3")
+cmc_g_cm3$`Measurand Minimum value`<-1000*cmc_g_cm3$`Measurand Minimum value`
+cmc_g_cm3$`Measurand Maximum value`<-1000*cmc_g_cm3$`Measurand Maximum value`
+cmc_g_cm3$Unit<-"kg/m3"
+
+cmc_kg_m3<-filter(cmc,Unit=="kg/m3")
+cmc_kg_m3$`Measurand Minimum value`<-1*cmc_kg_m3$`Measurand Minimum value`
+cmc_kg_m3$`Measurand Maximum value`<-1*cmc_kg_m3$`Measurand Maximum value`
+cmc_kg_m3$Unit<-"kg/m3"
+
+cmc_L_s<-filter(cmc,Unit=="L/s")
+cmc_L_s$`Measurand Minimum value`<-(1/1000)*cmc_L_s$`Measurand Minimum value`
+cmc_L_s$`Measurand Maximum value`<-(1/1000)*cmc_L_s$`Measurand Maximum value`
+cmc_L_s$Unit<-"m3/s"
+
+
+cmc_L_min<-filter(cmc,Unit=="L/min")
+cmc_L_min$`Measurand Minimum value`<-(1/1000)*(1/60)*cmc_L_min$`Measurand Minimum value`
+cmc_L_min$`Measurand Maximum value`<-(1/1000)*(1/60)*cmc_L_min$`Measurand Maximum value`
+cmc_L_min$Unit<-"m3/s"
+
+
+cmc_m3_h<-filter(cmc,Unit=="m3/h")
+cmc_m3_h$`Measurand Minimum value`<-(1)*(1/60)*(1/60)*cmc_m3_h$`Measurand Minimum value`
+cmc_m3_h$`Measurand Maximum value`<-(1)*(1/60)*(1/60)*cmc_m3_h$`Measurand Maximum value`
+cmc_m3_h$Unit<-"m3/s"
+
+
+cmc_L_min<-filter(cmc,Unit=="L/min")
+cmc_L_min$`Measurand Minimum value`<-(1/1000)*(1/60)*cmc_L_min$`Measurand Minimum value`
+cmc_L_min$`Measurand Maximum value`<-(1/1000)*(1/60)*cmc_L_min$`Measurand Maximum value`
+cmc_L_min$Unit<-"m3/s"
+
+
+cmc_L_h<-filter(cmc,Unit=="L/h")
+cmc_L_h$`Measurand Minimum value`<-(1/1000)*(1/60)*(1/60)*cmc_L_h$`Measurand Minimum value`
+cmc_L_h$`Measurand Maximum value`<-(1/1000)*(1/60)*(1/60)*cmc_L_h$`Measurand Maximum value`
+cmc_L_h$Unit<-"m3/s"
+
+
+cmc_m3_s<-filter(cmc,Unit=="m3/s")
+cmc_m3_s$Unit<-"m3/s"
+
+cmc_dm3_s<-filter(cmc,Unit=="dm3/s")
+cmc_dm3_s$`Measurand Minimum value`<-(1/1000)*cmc_dm3_s$`Measurand Minimum value`
+cmc_dm3_s$`Measurand Maximum value`<-(1/1000)*cmc_dm3_s$`Measurand Maximum value`
+cmc_dm3_s$Unit<-"m3/s"
+
+cmc_cm3_s<-filter(cmc,Unit=="cm3/s")
+cmc_cm3_s$`Measurand Minimum value`<-(1/1000000)*cmc_cm3_s$`Measurand Minimum value`
+cmc_cm3_s$`Measurand Maximum value`<-(1/1000000)*cmc_cm3_s$`Measurand Maximum value`
+cmc_cm3_s$Unit<-"m3/s"
+
+
+cmc_mL_h<-filter(cmc,Unit=="mL/h")
+cmc_mL_h$`Measurand Minimum value`<-(1/1000000)*(1/60)*(1/60)*cmc_mL_h$`Measurand Minimum value`
+cmc_mL_h$`Measurand Maximum value`<-(1/1000000)*(1/60)*(1/60)*cmc_mL_h$`Measurand Maximum value`
+cmc_mL_h$Unit<-"m3/s"
+
+
+cmc_mL_min<-filter(cmc,Unit=="mL/min")
+cmc_mL_min$`Measurand Minimum value`<-(1/1000000)*(1/60)*cmc_mL_min$`Measurand Minimum value`
+cmc_mL_min$`Measurand Maximum value`<-(1/1000000)*(1/60)*cmc_mL_min$`Measurand Maximum value`
+cmc_mL_min$Unit<-"m3/s"
+
+
+
+
+cmc_kg_h<-filter(cmc,Unit=="kg/h")
+cmc_kg_h$`Measurand Minimum value`<-(1)*(1/60)*(1/60)*cmc_kg_h$`Measurand Minimum value`
+cmc_kg_h$`Measurand Maximum value`<-(1)*(1/60)*(1/60)*cmc_kg_h$`Measurand Maximum value`
+cmc_kg_h$Unit<-"kg/s"
+
+cmc_mg_s<-filter(cmc,Unit=="mg/s")
+cmc_mg_s$`Measurand Minimum value`<-(1/100000)*cmc_mg_s$`Measurand Minimum value`
+cmc_mg_s$`Measurand Maximum value`<-(1/100000)*cmc_mg_s$`Measurand Maximum value`
+cmc_mg_s$Unit<-"kg/s"
+
+cmc_kg_min<-filter(cmc,Unit=="kg/min")
+cmc_kg_min$`Measurand Minimum value`<-(1/60)*cmc_kg_min$`Measurand Minimum value`
+cmc_kg_min$`Measurand Maximum value`<-(1/60)*cmc_kg_min$`Measurand Maximum value`
+cmc_kg_min$Unit<-"kg/s"
+
+cmc_t_h<-filter(cmc,Unit=="t/h")
+cmc_t_h$`Measurand Minimum value`<-(1000)*(1/60)*(1/60)*cmc_t_h$`Measurand Minimum value`
+cmc_t_h$`Measurand Maximum value`<-(1000)*(1/60)*(1/60)*cmc_t_h$`Measurand Maximum value`
+cmc_t_h$Unit<-"kg/s"
+
+cmc_g_min<-filter(cmc,Unit=="g/min")
+cmc_g_min$`Measurand Minimum value`<-(1/1000)*(1/60)*cmc_g_min$`Measurand Minimum value`
+cmc_g_min$`Measurand Maximum value`<-(1/1000)*(1/60)*cmc_g_min$`Measurand Maximum value`
+cmc_g_min$Unit<-"kg/s"
+
+cmc_mg_min<-filter(cmc,Unit=="mg/min")
+cmc_mg_min$`Measurand Minimum value`<-(1/1000000)*(1/60)*cmc_mg_min$`Measurand Minimum value`
+cmc_mg_min$`Measurand Maximum value`<-(1/1000000)*(1/60)*cmc_mg_min$`Measurand Maximum value`
+cmc_mg_min$Unit<-"kg/s"
+
+cmc_g_s<-filter(cmc,Unit=="g/s")
+cmc_g_s$`Measurand Minimum value`<-(1/1000)*cmc_g_s$`Measurand Minimum value`
+cmc_g_s$`Measurand Maximum value`<-(1/1000)*cmc_g_s$`Measurand Maximum value`
+cmc_g_s$Unit<-"kg/s"
+
+cmc_g_h<-filter(cmc,Unit=="g/h")
+cmc_g_h$`Measurand Minimum value`<-(1/1000)*(1/60)*(1/60)*cmc_g_h$`Measurand Minimum value`
+cmc_g_h$`Measurand Maximum value`<-(1/1000)*(1/60)*(1/60)*cmc_g_h$`Measurand Maximum value`
+cmc_g_h$Unit<-"kg/s"
+
+cmc_kg_s<-filter(cmc,Unit=="kg/s")
+cmc_kg_s$Unit<-"kg/s"
+
+cmc_Pa<-filter(cmc,Unit=="Pa")
+cmc_Pa$Unit<-"Pa"
+
+cmc_kPa<-filter(cmc,Unit=="kPa")
+cmc_kPa$`Measurand Minimum value`<-1000*cmc_kPa$`Measurand Minimum value`
+cmc_kPa$`Measurand Maximum value`<-1000*cmc_kPa$`Measurand Maximum value`
+cmc_kPa$Unit<-"Pa" 
+
+cmc_MPa<-filter(cmc,Unit=="MPa")
+cmc_MPa$`Measurand Minimum value`<-1000*cmc_MPa$`Measurand Minimum value`
+cmc_MPa$`Measurand Maximum value`<-1000*cmc_MPa$`Measurand Maximum value`
+cmc_MPa$Unit<-"Pa" 
+
+cmc_W<-filter(cmc,Unit=="W")
+cmc_W$Unit<-"W"
+
+cmc_K<-filter(cmc,Unit=="K")
+cmc_K$Unit<-"K"
+
+cmc_L<-filter(cmc,Unit=="L")
+cmc_L$Unit<-"L"
+
+cmc_µL<-filter(cmc,Unit=="µL")
+cmc_µL$`Measurand Minimum value`<-(1/1000000)*cmc_µL$`Measurand Minimum value`
+cmc_µL$`Measurand Maximum value`<-(1/1000000)*cmc_µL$`Measurand Maximum value`
+cmc_µL$Unit<-"L" 
+
+cmc_mL<-filter(cmc,Unit=="µL")
+cmc_mL$`Measurand Minimum value`<-(1/1000)*cmc_mL$`Measurand Minimum value`
+cmc_mL$`Measurand Maximum value`<-(1/1000)*cmc_mL$`Measurand Maximum value`
+cmc_mL$Unit<-"L" 
+
+cmc_m3<-filter(cmc,Unit=="m3")
+cmc_m3$`Measurand Minimum value`<-(1000)*cmc_m3$`Measurand Minimum value`
+cmc_m3$`Measurand Maximum value`<-(1000)*cmc_m3$`Measurand Maximum value`
+cmc_m3$Unit<-"L" 
+
+cmc_m_s2<-filter(cmc,Unit=="m/s2")
+cmc_m_s2$Unit<-"m/s2"
+
+cmc_cm3<-filter(cmc,Unit=="cm3")
+cmc_cm3$Unit<-"cm3"
+
+
+
+cmc<-rbind(
+cmc_mg,
+cmc_g,
+cmc_kg,
+cmc_kN,
+cmc_N,
+cmc_MN,
+cmc_N_p_M,
+cmc_Nm,
+cmc_kNm,
+cmc_g_cm3,
+cmc_kg_m3,
+cmc_L_s,
+cmc_L_min,
+cmc_m3_h,
+cmc_L_h,
+cmc_m3_s,
+cmc_dm3_s,
+cmc_cm3_s,
+cmc_mL_h,
+cmc_mL_min,
+cmc_kg_h,
+cmc_mg_s,
+cmc_kg_min,
+cmc_t_h,
+cmc_g_min,
+cmc_mg_min,
+cmc_g_s,
+cmc_g_h,
+cmc_kg_s,
+cmc_Pa,
+cmc_kPa,
+cmc_MPa,
+cmc_W,
+cmc_K,
+cmc_L,
+cmc_µL,
+cmc_mL,
+cmc_m3,
+cmc_m_s2,
+cmc_cm3)
+
+rm(
+  cmc_mg,
+  cmc_g,
+  cmc_kg,
+  cmc_kN,
+  cmc_N,
+  cmc_MN,
+  cmc_N_p_M,
+  cmc_Nm,
+  cmc_kNm,
+  cmc_g_cm3,
+  cmc_kg_m3,
+  cmc_L_s,
+  cmc_L_min,
+  cmc_m3_h,
+  cmc_L_h,
+  cmc_m3_s,
+  cmc_dm3_s,
+  cmc_cm3_s,
+  cmc_mL_h,
+  cmc_mL_min,
+  cmc_kg_h,
+  cmc_mg_s,
+  cmc_kg_min,
+  cmc_t_h,
+  cmc_g_min,
+  cmc_mg_min,
+  cmc_g_s,
+  cmc_g_h,
+  cmc_kg_s,
+  cmc_Pa,
+  cmc_kPa,
+  cmc_MPa,
+  cmc_W,
+  cmc_K,
+  cmc_L,
+  cmc_µL,
+  cmc_mL,
+  cmc_m3,
+  cmc_m_s2,
+  cmc_cm3,cmc_i)
+
+
+###Revisión de los valores de incertidumbre
+cmc$`Uncertainty Equation 2`<-cmc$`Uncertainty Equation`
+
+
+for(i in 1:nrow(cmc)){
+  
+  if (cmc$`Uncertainty Equation 2`[i]=="") {
+    if (cmc$`Expanded uncertainty Minimum value`[i]!=cmc$`Expanded uncertainty Maximum value`[i]){
+    y1<-cmc$`Expanded uncertainty Minimum value`[i]
+    y2<-cmc$`Expanded uncertainty Maximum value`[i]
+    x1<-cmc$`Measurand Minimum value`[i]
+    x2<-cmc$`Measurand Maximum value`[i]
+        m<-(y2-y1)/(x2-x1)
+    cmc$`Uncertainty Equation 2`[i]<-paste(m,"*(vn-",x1,")+",y1,sep="")} else {
+      cmc$`Uncertainty Equation 2`[i]<-cmc$`Expanded uncertainty Minimum value`[i]}
+    
+  }
+}
+
+
+cmc$`Unit Uncertainty Equation 2`<-cmc$`E U Unit`
+
+ 
+
+
+####################################################################################################################
+####################################################################################################################
+########################################arreglo de incertidumbres en presión########################################
+cmc_punto_Pa<-filter(cmc,cmc$Comments=="Uncertainty values range from 2.0E-6 Pa to 3.6E-3 Pa.")
+  cmc_punto_Pa$Comments<-gsub("Pa.","Pa",cmc_punto_Pa$Comments,fixed = TRUE)
+cmc_no_punto_Pa<-filter(cmc,cmc$Comments!="Uncertainty values range from 2.0E-6 Pa to 3.6E-3 Pa.")
+cmc<-rbind(cmc_no_punto_Pa,cmc_punto_Pa)
+rm(cmc_no_punto_Pa,cmc_punto_Pa)
+
+cmc_MPa<-filter(cmc,`E U Unit`=="MPa")
+cmc_no_MPa<-filter(cmc,`E U Unit`!="MPa")
+cmc_MPa$`Uncertainty Equation 2`<- gsub("P","p",cmc_MPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_MPa$`Uncertainty Equation 2`<- gsub("p2","p^2",cmc_MPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_MPa$`Uncertainty Equation 2`<- gsub("1p","1*p",cmc_MPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_MPa$`Uncertainty Equation 2`<- gsub("2p","2*p",cmc_MPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_MPa$`Uncertainty Equation 2`<- gsub("3p","3*p",cmc_MPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_MPa$`Uncertainty Equation 2`<- gsub("4p","4*p",cmc_MPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_MPa$`Uncertainty Equation 2`<- gsub("5p","5*p",cmc_MPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_MPa$`Uncertainty Equation 2`<- gsub("6p","6*p",cmc_MPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_MPa$`Uncertainty Equation 2`<- gsub("7p","7*p",cmc_MPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_MPa$`Uncertainty Equation 2`<- gsub("8p","8*p",cmc_MPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_MPa$`Uncertainty Equation 2`<- gsub("9p","9*p",cmc_MPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_MPa$`Uncertainty Equation 2`<-paste("(",cmc_MPa$`Uncertainty Equation 2`,")*1000000",sep="")
+cmc_MPa$`Uncertainty Equation 2`<-paste("(",cmc_MPa$`Uncertainty Equation 2`,")/p",sep="")
+cmc_MPa$`Uncertainty Equation 2`<- gsub("p","(p/1000000)",cmc_MPa$`Uncertainty Equation 2`, fixed=TRUE)
+
+cmc_MPa$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+cmc<-rbind(cmc_MPa,cmc_no_MPa)
+rm(cmc_MPa,cmc_no_MPa)
+
+
+
+
+
+
+
+cmc_kPa<-filter(cmc,`E U Unit`=="kPa")
+cmc_no_kPa<-filter(cmc,`E U Unit`!="kPa")
+cmc_kPa$`Uncertainty Equation 2`<- gsub("P","p",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("p2","p^2",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("1p","1*p",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("2p","2*p",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("3p","3*p",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("4p","4*p",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("5p","5*p",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("6p","6*p",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("7p","7*p",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("8p","8*p",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("9p","9*p",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("0p","0*p",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("15E-06 pl) + (15E-06 ps","((15E-06*150) + (15E-06*(p+150)))", cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("3E-05*p","max(0.8,3E-05*p)",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_kPa$`Uncertainty Equation 2`<- gsub("3E-04*p","max(0.3,3E-04*p)",cmc_kPa$`Uncertainty Equation 2`, fixed=TRUE)
+indices<-data.frame(str_which(cmc_kPa$`Uncertainty Equation 2`,"pl line pressure"))
+colnames(indices)[1]<-"fila"
+cmc_kPa$`Uncertainty Equation 2`[indices[1,1]]<- "((2.5E-06*(20000000-p))^2 + (2.9E-05*p)^2)^0.5"
+            cmc_kPa_no_ec<-filter(cmc_kPa, cmc_kPa$`Uncertainty Equation 2`!="((2.5E-06*(20000000-p))^2 + (2.9E-05*p)^2)^0.5")
+            cmc_kPa_no_ec$`Uncertainty Equation 2`<- gsub("p","(p/1000)",cmc_kPa_no_ec$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_kPa_no_ec$`Uncertainty Equation 2`<-paste("(",cmc_kPa_no_ec$`Uncertainty Equation 2`,")/(p/1000)",sep="")
+            
+            cmc_kPa_ec<-filter(cmc_kPa, cmc_kPa$`Uncertainty Equation 2`=="((2.5E-06*(20000000-p))^2 + (2.9E-05*p)^2)^0.5")
+            cmc_kPa_ec$`Uncertainty Equation 2`<-paste("(",cmc_kPa_ec$`Uncertainty Equation 2`,")/(p/1000)",sep="")
+cmc_kPa<-rbind(cmc_kPa_no_ec,cmc_kPa_ec)
+rm(cmc_kPa_no_ec,cmc_kPa_ec)
+cmc_kPa$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+cmc<-rbind(cmc_kPa,cmc_no_kPa)
+rm(cmc_kPa,cmc_no_kPa)
+
+
+ 
+cmc_Pa<-filter(cmc,`E U Unit`=="Pa")
+cmc_no_Pa<-filter(cmc,`E U Unit`!="Pa")
+
+cmc_Pa$`Uncertainty Equation 2`<- gsub("P","p",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("p2","p^2",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("1p","1*p",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("2p","2*p",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("3p","3*p",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("4p","4*p",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("5p","5*p",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("6p","6*p",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("7p","7*p",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("8p","8*p",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("9p","9*p",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("0p","0*p",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("Q[0.65, 2.6E-05*p]" ,"[(0.65)2+(2.6E-05*p)2]1/2", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub(", p pressure in pa" ,"", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub(", p  pressure in pa" ,"", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("(1.00E-04*p + 7) or (1.00E-04*p + 1.60E-06*pline) whichever is greater, p and pline in pa" ,"max(1.00E-04*p + 7, 1.00E-04*p + 1.60E-06*(1.00E+07-p))", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("pa" ,"", cmc_Pa$`Uncertainty Equation 2`,fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("vn" ,"p", cmc_Pa$`Uncertainty Equation 2`,fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("0.6 + 3E-08*pline + 3E-04*p" ,"0.6 + 3E-08*40000000 + 3E-04*p", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("10 + 4E-06*pline + 2.2E-05*p" ,"10 + 4E-06*(20000000-p) + 2.2E-05*p", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("10 + 4E-06*pline + 2.4E-05*p" ,"10 + 4E-06*(40000000-p)+ 2.4E-05*p", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("6 + 1.5E-06*pline + 2.5E-05*p" ,"6 + 1.5E-06*(40000000-p)+ 2.5E-05*p", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("10 + 1.5E-06*pline + 2E-05*p" ,"10 + 1.5E-06*(20000000-p)+ 2E-05*p", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("1.1 + (1E-11*pline + 4E-05)p" ,"1.1 + (1E-11*4E+07 + 4E-05)p", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("10 + 3.5E-05*pline + 3.5E-05*pdiff" ,"10 + 3.5E-05*(20000000-p) + 3.5E-05*p", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("(1.4E-01)2 + (12E-06*p)2]1/2" ,"[(1.4E-01)2 + (12E-06*p)2]1/2", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("(4E-03)2 + (36E-06*p)2]1/2" ,"[(4E-03)2 + (36E-06*p)2]1/2", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("2]1/2" ,"^2]^0.5", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("  " ," ", cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("1)2","1)^2",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("2)2","2)^2",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("3)2","3)^2",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("4)2","4)^2",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("5)2","5)^2",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("6)2","6)^2",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("7)2","7)^2",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("8)2","8)^2",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("9)2","9)^2",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<- gsub("0)2","0)^2",cmc_Pa$`Uncertainty Equation 2`, fixed=TRUE)
+
+indices<-data.frame(str_which(cmc_Pa$`Uncertainty Equation 2`,"272"))
+cmc_Pa$`Uncertainty Equation 2`[indices[1,1]]<-gsub("[","(",cmc_Pa$`Uncertainty Equation 2`[indices[1,1]],fixed = TRUE)
+cmc_Pa$`Uncertainty Equation 2`[indices[1,1]]<-gsub("]",")",cmc_Pa$`Uncertainty Equation 2`[indices[1,1]],fixed = TRUE)
+cmc_Pa$`Uncertainty Equation 2`[indices[1,1]]<-gsub("((272","((27^2)",cmc_Pa$`Uncertainty Equation 2`[indices[1,1]],fixed = TRUE)
+
+
+indices<-data.frame(str_which(cmc_Pa$`Uncertainty Equation 2`,"2.85E-09"))
+cmc_Pa$`Uncertainty Equation 2`[indices[1,1]]<-"(2.8E-03 + 2.85E-09p2)^0.5"
+
+
+indices<-data.frame(str_which(cmc_Pa$`Uncertainty Equation 2`,"1.1 +"))
+cmc_Pa$`Uncertainty Equation 2`[indices[1,1]]<-"1.1 + (1E-11*4E+07 + 4E-05)*p"
+
+indices<-data.frame(str_which(cmc_Pa$`Uncertainty Equation 2`,"1.1 +"))
+
+
+
+
+indices1<-data.frame(str_which(cmc_Pa$Comments,"to"))
+indices2<-data.frame(str_which(cmc_Pa$`Uncertainty Equation 2`,"to"))
+colnames(indices1)[1]<-"fila"
+colnames(indices2)[1]<-"fila"
+indices<-inner_join(indices1,indices2)
+
+colnames(indices)[1]<-"fila"
+
+for(i in 1:nrow(indices)){
+ 
+  a<-str_sub(cmc_Pa$Comments[indices[i,1]],str_locate(cmc_Pa$Comments[indices[i,1]],"from")[2]+1,str_locate(cmc_Pa$Comments[indices[i,1]] ,"Pa to")[1]-2)
+  a<-gsub("Pa", "",a, fixed=TRUE)
+  print(a)
+  print (i)
+  a<-eval(parse(text=a))
+
+  
+  b<-str_sub(cmc_Pa$Comments[indices[i,1]],str_locate(cmc_Pa$Comments[indices[i,1]] ,"Pa to")[2]+2,str_locate(cmc_Pa$Comments[indices[i,1]] ,"Pa to")[2]+11)
+  b<-gsub("Pa", "",b, fixed=TRUE)
+  b<-eval(parse(text=b))
+  
+  m<-(b-a)/(cmc_Pa$`Measurand Maximum value`[indices[i,1]]-cmc_Pa$`Measurand Minimum value`[indices[i,1]])
+  n<--m*cmc_Pa$`Measurand Minimum value`[indices[i,1]]+a
+  cmc_Pa$`Uncertainty Equation 2`[indices[i,1]]<-paste(m,"*p+",n,sep="")
+  }
+cmc<-rbind(cmc_Pa,cmc_no_Pa)
+rm(cmc_Pa,cmc_no_Pa,indices,indices1,indices2)
+
+
+
+
+cmc_Pa<-filter(cmc,`E U Unit`=="Pa")
+
+indices<-data.frame(str_which(cmc_Pa$`Uncertainty Equation 2`,"to"))
+cmc_Pa$`Uncertainty Equation 2`[indices[1,1]]<-paste("0.000000005"," to ","0.00006",sep="")
+indices<-data.frame(str_which(cmc_Pa$`Uncertainty Equation 2`,"to"))
+
+for(i in 1:nrow(indices)){
+  
+  a<-str_sub(cmc_Pa$`Uncertainty Equation 2`[indices[i,1]],1,str_locate(cmc_Pa$`Uncertainty Equation 2`[indices[i,1]] ,"to")[1]-1)
+  a<-eval(parse(text=a))
+  
+  
+  b<-str_sub(cmc_Pa$`Uncertainty Equation 2`[indices[i,1]],str_locate(cmc_Pa$`Uncertainty Equation 2`[indices[i,1]] ,"to")[2]+1,str_locate(cmc_Pa$`Uncertainty Equation 2`[indices[i,1]] ,"to")[2]+12)
+  b<-eval(parse(text=b))
+  
+  m<-(b-a)/(cmc_Pa$`Measurand Maximum value`[indices[i,1]]-cmc_Pa$`Measurand Minimum value`[indices[i,1]])
+  n<--m*cmc_Pa$`Measurand Minimum value`[indices[i,1]]+a
+  cmc_Pa$`Uncertainty Equation 2`[indices[i,1]]<-paste(m,"*p+",n,sep="")
+}
+
+cmc_no_Pa<-filter(cmc,`E U Unit`!="Pa")
+cmc<-rbind(cmc_Pa,cmc_no_Pa)
+rm(cmc_Pa,cmc_no_Pa,indices)
+
+cmc_Pa<-filter(cmc,`E U Unit`=="Pa")
+cmc_Pa$`Uncertainty Equation 2`<-paste("(",cmc_Pa$`Uncertainty Equation 2`,")/p",sep="")
+cmc_Pa$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+indices<-data.frame(str_which(cmc_Pa$`Comment Uncertainty Equation`,"MPa"))
+cmc_Pa$`Uncertainty Equation 2`[indices[1,1]]<-gsub("p","(p/1000000)",cmc_Pa$`Uncertainty Equation 2`[indices[1,1]],fixed = TRUE)
+cmc_no_Pa<-filter(cmc,`E U Unit`!="Pa")
+cmc<-rbind(cmc_Pa,cmc_no_Pa)
+rm(cmc_Pa,cmc_no_Pa,indices,indices1,indices2)
+
+
+cmc_Pa<-filter(cmc,`E U Unit`=="Pa")
+           cmc_Pa_ec<-filter(cmc_Pa,`Uncertainty Equation 2`=="((3.0E-05*p+2.1e-13*p^2)/p")
+           cmc_Pa_ec$`Uncertainty Equation 2`<-"(3.0E-05*p+2.1*((2.71828183)^13)*p^2)/p"
+           cmc_Pa_no_ec<-filter(cmc_Pa,`Uncertainty Equation 2`!="((3.0E-05*p+2.1e-13*p^2)/p")
+cmc_no_Pa<-filter(cmc,`E U Unit`!="Pa")
+
+cmc<-rbind(cmc_Pa_ec,cmc_Pa_no_ec,cmc_no_Pa)
+rm(cmc_Pa_ec,cmc_Pa_no_ec,cmc_no_Pa,cmc_Pa)
+
+
+cmc_Pa<-filter(cmc,`E U Unit`=="Pa")
+cmc_Pa$`Uncertainty Equation 2`<-gsub("[","(",cmc_Pa$`Uncertainty Equation 2`,fixed=TRUE)
+cmc_Pa$`Uncertainty Equation 2`<-gsub("]",")",cmc_Pa$`Uncertainty Equation 2`,fixed=TRUE)
+cmc_no_Pa<-filter(cmc,`E U Unit`!="Pa")
+cmc<-rbind(cmc_Pa,cmc_no_Pa)
+rm(cmc_Pa,cmc_no_Pa)
+
+
+cmc_porcentaje<-filter(cmc,`E U Unit`=="%")
+     cmc_porcentaje_Pa<-filter(cmc_porcentaje,Unit=="Pa")
+     cmc_porcentaje_Pa$`Uncertainty Equation 2`<-gsub("vn","p",cmc_porcentaje_Pa$`Uncertainty Equation 2`,fixed = TRUE)
+     cmc_porcentaje_Pa$`Uncertainty Equation 2`<-gsub("5p","5*p",cmc_porcentaje_Pa$`Uncertainty Equation 2`,fixed = TRUE)
+     cmc_porcentaje_Pa$`Uncertainty Equation 2`<-paste("(",cmc_porcentaje_Pa$`Uncertainty Equation 2`,")/100",sep="")
+     cmc_porcentaje_Pa$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+     
+     cmc_porcentaje_no_Pa<-filter(cmc_porcentaje,Unit!="Pa")
+
+cmc_no_porcentaje<-filter(cmc,`E U Unit`!="%")
+
+cmc<-rbind(cmc_porcentaje_Pa,  cmc_porcentaje_no_Pa   ,cmc_no_porcentaje)
+rm(cmc_no_porcentaje, cmc_porcentaje_no_Pa, cmc_porcentaje_Pa, cmc_porcentaje)
+
+ 
+
+cmc_Pa<-filter(cmc,Unit=="Pa")
+      cmc_Pa_dim<-filter(cmc_Pa,`E U Unit`=="(dimensionless)")
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("P","p",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("p2","p^2",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("1p","1*p",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("2p","2*p",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("3p","3*p",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("4p","4*p",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("5p","5*p",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("6p","6*p",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("7p","7*p",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("8p","8*p",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("9p","9*p",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("0p","0*p",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub(", p pressure in pa" ,"", cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub(", p in kpa" ,"", cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("20*p,  p in kpa" ,"20*p", cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2` <-gsub("vn","p",cmc_Pa_dim$`Uncertainty Equation 2` ,fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("2]1/2" ,"^2]^0.5", cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("  " ," ", cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("1)2","1)^2",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("2)2","2)^2",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("3)2","3)^2",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("4)2","4)^2",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("5)2","5)^2",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("6)2","6)^2",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("7)2","7)^2",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("8)2","8)^2",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("9)2","9)^2",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("0)2","0)^2",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("p)2","p)^2",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            indices<-data.frame(str_which(cmc_Pa_dim$`Uncertainty Equation 2`,"1.04E-05"))
+            cmc_Pa_dim$`Uncertainty Equation 2`[indices[1,1]]<-"[(0.15/p)^2 + (1.04E-05)^2]^0.5"	
+            indices<-data.frame(str_which(cmc_Pa_dim$`Uncertainty Equation 2`,"1.32E-05"))
+            cmc_Pa_dim$`Uncertainty Equation 2`[indices[1,1]]<-"[(1.32E-05)^2 + (2.24E-12*p)^2]^0.5"	
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("[","(",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("]",")",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            #####arreglo de este error: p in kPa The uncertainty is expressed in mPa para NMIJ AIST
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("1000 + 15*p","(1000 + 15*(p/1000))/1000",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("11 + 14*p","(11 + 14*(p/1000))/1000",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("1000 + 20*p","(1000 + 20*(p/1000))/1000",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("200 + 15*p","(200 + 15*(p/1000))/1000",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+            cmc_Pa_dim$`Uncertainty Equation 2`<- gsub("20*p","(20*(p/1000))/1000",cmc_Pa_dim$`Uncertainty Equation 2`, fixed=TRUE)
+
+      cmc_no_Pa_no_dim<-filter(cmc_Pa,`E U Unit`!="(dimensionless)")
+cmc_no_Pa<-filter(cmc,Unit!="Pa")
+
+cmc<-rbind(cmc_Pa_dim,cmc_no_Pa_no_dim,cmc_no_Pa)
+rm(cmc_Pa_dim,cmc_no_Pa_no_dim,cmc_no_Pa,cmc_Pa,indices)
+
+
+
+cmc_Pa<-filter(cmc,Unit=="Pa")
+            cmc_Pa_NA<-filter(cmc_Pa,is.na(`Measurand Maximum value`))
+            cmc_Pa_NA$`Measurand Maximum value`<-cmc_Pa_NA$`Measurand Minimum value`
+            cmc_Pa_no_NA<-filter(cmc_Pa,!is.na(`Measurand Maximum value`))
+cmc_Pa_no<-filter(cmc,Unit!="Pa")
+cmc<-rbind(cmc_Pa_NA,cmc_Pa_no_NA,cmc_Pa_no)
+rm(cmc_Pa_NA,cmc_Pa_no_NA,cmc_Pa_no,cmc_Pa)
+
+
+
+cmc_Pa<-filter(cmc,Unit=="Pa")
+            cmc_Pa_NA<-filter(cmc_Pa,is.na(`Measurand Minimum value`))
+            cmc_Pa_NA$`Measurand Minimum value`<-cmc_Pa_NA$`Measurand Maximum value`
+            cmc_Pa_no_NA<-filter(cmc_Pa,!is.na(`Measurand Minimum value`))
+cmc_Pa_no<-filter(cmc,Unit!="Pa")
+cmc<-rbind(cmc_Pa_NA,cmc_Pa_no_NA,cmc_Pa_no)
+rm(cmc_Pa_NA,cmc_Pa_no_NA,cmc_Pa_no,cmc_Pa)
+
+
+##########################################################################################################
+##########################################################################################################
+############################################revisión de flujo#############################################
+#unidades "m3/s"  "kg/s" "L"
+
+
+cmc$`Uncertainty Equation 2`<- gsub("0.0013/Qm + 0.055","0.0013/(Qm*60000)+0.055", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("0.0006Qm + 0.06","0.0006*Qm*60000 + 0.06", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("0.002/Qm + 0.04","0.002/(Qm*60000) + 0.04", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("0.0006Qm + 0.05","0.0006*Qm*60000 + 0.05", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("0.02/Qm + 0.02","0.02/(Qm*60000) + 0.02", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("0.005Qm + 0.06","0.005*Qm*60000 + 0.06", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("0.002/Qm + 0.055","0.002/(Qm*60000) + 0.055", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("0.0024Qm + 0.06","0.0024*Qm*60000 + 0.06", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("0.0011Qm + 0.07","0.0011*Qm*60000 + 0.07", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("0.0006/Qm + 0.065","0.0006/(Qm*60000) + 0.065", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("0.001Qm + 0.05","0.001*Qm*60000 + 0.05", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("0.0011Qm + 0.07","0.0011*Qm*60000 + 0.07", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("0.0006/Qm + 0.045","0.0006/(Qm*60000) + 0.045", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("-3708Q + 0.8895","-3708*Q + 0.8895", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+cmc$`Uncertainty Equation 2`<- gsub("(0.10 / (1 - exp(-q / 3.4)) with q flow rate in mL/h or g/)h","(0.10 / (1 - 2.71828182^(-(q*1000000/3600)/3.4)))", cmc$`Uncertainty Equation 2`, fixed=TRUE)
+
+
+
+aux<-filter(cmc,`Uncertainty Equation 2`=="0.15 for 5 kg/h to 12 kg/h, 0.08 for 12 kg/h to 25 kg/h, 0.05 for 25 kg/h to 10000 kg/h")
+aux[2,]<-aux[1,]
+aux[3,]<-aux[1,]
+aux$`Measurand Maximum value`[1]<-12/3600
+aux$`Measurand Maximum value`[2]<-25/3600
+aux$`Measurand Maximum value`[3]<-10000/3600
+aux$`Measurand Minimum value`[2]<-12/3600
+aux$`Measurand Minimum value`[3]<-25/3600
+aux$`Uncertainty Equation 2`[1]<-0.15
+aux$`Uncertainty Equation 2`[2]<-0.08
+aux$`Uncertainty Equation 2`[3]<-0.05
+cmc<-filter(cmc,`Uncertainty Equation 2`!="0.15 for 5 kg/h to 12 kg/h, 0.08 for 12 kg/h to 25 kg/h, 0.05 for 25 kg/h to 10000 kg/h")
+cmc<-rbind(cmc,aux)
+
+
+
+aux<-filter(cmc,`Uncertainty Equation 2`=="0.5 for (0.6 -  4) m3/h; 0.35 for (4.5 - 10000) m3/h")
+aux[2,]<-aux[1,]
+aux$`Measurand Maximum value`[1]<-4/3600
+aux$`Measurand Maximum value`[2]<-10000/3600
+aux$`Measurand Minimum value`[2]<-4.5/3600
+aux$`Uncertainty Equation 2`[1]<-0.5
+aux$`Uncertainty Equation 2`[2]<-0.35
+cmc<-filter(cmc,`Uncertainty Equation 2`!="0.5 for (0.6 -  4) m3/h; 0.35 for (4.5 - 10000) m3/h")
+cmc<-rbind(cmc,aux)
+
+aux<-filter(cmc,`Uncertainty Equation 2`=="0.16 for 5 L/h to 12 L/h, 0.09 for 12 L/h to 25 L/h, 0.07 for 25 L/h to 50 L/h, 0.05 for 50 L/h to 10000 L/h")
+aux[2,]<-aux[1,]
+aux[3,]<-aux[1,]
+aux[4,]<-aux[1,]
+aux$`Measurand Maximum value`[1]<-12/(1000*3600)
+aux$`Measurand Maximum value`[2]<-25/(1000*3600)
+aux$`Measurand Maximum value`[3]<-50/(1000*3600)
+aux$`Measurand Maximum value`[4]<-1000/(1000*3600)
+aux$`Measurand Minimum value`[2]<-12/(1000*3600)
+aux$`Measurand Minimum value`[3]<-25/(1000*3600)
+aux$`Measurand Minimum value`[4]<-50/(1000*3600)
+aux$`Uncertainty Equation 2`[1]<-0.16
+aux$`Uncertainty Equation 2`[2]<-0.09
+aux$`Uncertainty Equation 2`[3]<-0.07
+aux$`Uncertainty Equation 2`[4]<-0.05
+cmc<-filter(cmc,`Uncertainty Equation 2`!="0.16 for 5 L/h to 12 L/h, 0.09 for 12 L/h to 25 L/h, 0.07 for 25 L/h to 50 L/h, 0.05 for 50 L/h to 10000 L/h")
+cmc<-rbind(cmc,aux)
+
+
+aux<-filter(cmc,`Uncertainty Equation 2`=="0.23 (-20 °C to 55 °C), 0.32 (other T)")
+aux[2,]<-aux[1,]
+aux$`Uncertainty Equation 2`[1]<-0.23
+aux$`Uncertainty Equation 2`[2]<-0.32
+aux$Parameters[1]<-"Gas: air. \n Temperature : -20 °C to 55 °C \n Pressure : 1 bar to 5 bar \n Pipe size : DN 25 to DN 100"
+aux$Parameters[2]<-"Gas: air. \n Temperature : -45 °C to -20 °C and 55 °C to 80 °C \n Pressure : 1 bar to 5 bar \n Pipe size : DN 25 to DN 100"
+cmc<-filter(cmc,`Uncertainty Equation 2`!="0.23 (-20 °C to 55 °C), 0.32 (other T)")
+cmc<-rbind(cmc,aux)
+
+aux<-filter(cmc,`Uncertainty Equation 2`=="0.2 (-20 °C to 55 °C), 0.3 (other T)")
+aux[2,]<-aux[1,]
+aux$`Uncertainty Equation 2`[1]<-0.2
+aux$`Uncertainty Equation 2`[2]<-0.3
+aux$Parameters[1]<-"Gas : dry air\nTemperature : -20 °C to 55 °C  \nPressure : 0.7 MPa to 6 MPa\nPipe size : 1.5 mm to 20 mm"
+aux$Parameters[2]<-"Gas : dry air\n Temperature > 55 °C, Temperature < -20 °C      \nPressure : 0.7 MPa to 6 MPa\nPipe size : 1.5 mm to 20 mm"
+cmc<-filter(cmc,`Uncertainty Equation 2`!="0.2 (-20 °C to 55 °C), 0.3 (other T)")
+cmc<-rbind(cmc,aux)
+
+
+
+aux<-filter(cmc,`Uncertainty Equation 2`=="(-0.233*p+0.26) with 0.2 < = p < 0.7 MPa 0.1% with 0.7 < = p < 6 MPa")
+aux[2,]<-aux[1,]
+aux$`Uncertainty Equation 2`[1]<-0.2
+aux$`Uncertainty Equation 2`[2]<-0.1
+aux$Parameters[1]<-"Gas : dry air\nTemperature : ambient temperature\nPressure : 0.2 MPa to 0.7 MPa\nPipe size : 1.5 mm to 20 mm"
+aux$Parameters[2]<-"Gas : dry air\nTemperature : ambient temperature\nPressure : 0.7 MPa to 6 MPa\nPipe size : 1.5 mm to 20 mm"
+cmc<-filter(cmc,`Uncertainty Equation 2`!="(-0.233*p+0.26) with 0.2 < = p < 0.7 MPa 0.1% with 0.7 < = p < 6 MPa")
+cmc<-rbind(cmc,aux)
+
+
+
+lista<-c("L","m3/s","kg/s")
+cmc_flujo<-filter(cmc,Unit %in% lista)
+cmc_flujo$`Uncertainty Equation 2`<- gsub("V","p",cmc_flujo$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_flujo$`Uncertainty Equation 2`<- gsub("vn","p",cmc_flujo$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_flujo$`Uncertainty Equation 2`<- gsub("Qm","p",cmc_flujo$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_flujo$`Uncertainty Equation 2`<- gsub("Q","p",cmc_flujo$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_flujo$`Uncertainty Equation 2`<- gsub("q","p",cmc_flujo$`Uncertainty Equation 2`, fixed=TRUE)
+
+cmc_flujo_porcentaje<-filter(cmc_flujo,`Unit Uncertainty Equation 2`=="%")
+cmc_flujo_porcentaje$`Uncertainty Equation 2`<-paste("(",cmc_flujo_porcentaje$`Uncertainty Equation 2`,")/100",sep="")
+cmc_flujo_porcentaje$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+
+cmc_flujo_dimensionless<-filter(cmc_flujo,`Unit Uncertainty Equation 2`=="(dimensionless)")
+
+cmc_flujo_mL<-filter(cmc_flujo,cmc_flujo$`Unit Uncertainty Equation 2`=="mL")
+cmc_flujo_mL$`Uncertainty Equation 2`<-paste("(",cmc_flujo_mL$`Uncertainty Equation 2`,")/p",sep="")
+cmc_flujo_mL$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+
+cmc_no_flujo<-filter(cmc,!Unit %in% lista)
+
+cmc<-rbind(cmc_flujo_porcentaje, cmc_flujo_dimensionless, cmc_flujo_mL, cmc_no_flujo)
+rm(cmc_flujo_porcentaje, cmc_flujo_dimensionless, cmc_flujo_mL, cmc_no_flujo,cmc_flujo,aux)
+
+
+cmc_L<-filter(cmc,Unit=="L")
+cmc_L$`Uncertainty Equation 2`<-gsub("p)/p","*p)/p",cmc_L$`Uncertainty Equation 2`,fixed=TRUE) 
+cmc_no_L<-filter(cmc,Unit!="L")
+
+cmc<-rbind(cmc_L,cmc_no_L)
+rm(cmc_L,cmc_no_L)
+##########################################################################################################
+##########################################################################################################
+########################################arreglo de incertidumbres en volumen
+
+cmc_cm3   <-filter(cmc,Unit=="cm3")
+
+indices<-data.frame(str_which(cmc_cm3$`Uncertainty Equation 2`,"to"))
+colnames(indices)[1]<-"fila"
+
+
+for(i in 1:nrow(indices)){
+  
+  a<-str_sub(cmc_cm3$`Uncertainty Equation 2`[indices[i,1]],1,str_locate(cmc_cm3$`Uncertainty Equation 2`[indices[i,1]] ,"to")[1]-1)
+  a<-eval(parse(text=a))
+  
+  b<-str_sub(cmc_cm3$`Uncertainty Equation 2`[indices[i,1]],str_locate(cmc_cm3$`Uncertainty Equation 2`[indices[i,1]] ,"to")[2]+2,str_locate(cmc_cm3$`Uncertainty Equation 2`[indices[i,1]] ,"to")[2]+8)
+  b<-eval(parse(text=b))
+  
+  m<-(b-a)/(cmc_cm3$`Measurand Maximum value`[indices[i,1]]-cmc_cm3$`Measurand Minimum value`[indices[i,1]])
+  n<--m*cmc_cm3$`Measurand Minimum value`[indices[i,1]]+a
+  cmc_cm3$`Uncertainty Equation 2`[indices[i,1]]<-paste(m,"*p+",n,sep="")
+}
+cmc_no_cm3   <-filter(cmc,Unit!="cm3")
+
+cmc<-rbind(cmc_cm3,cmc_no_cm3)
+rm(cmc_cm3,cmc_no_cm3)
+
+
+
+cmc_cm3   <-filter(cmc,Unit=="cm3")
+     cmc_cm3_cm3<-filter(cmc,Unit=="cm3" & `Unit Uncertainty Equation 2`=="cm3")
+     
+     cmc_cm3_mm3<-filter(cmc,Unit=="cm3" & `Unit Uncertainty Equation 2`=="mm3")
+     cmc_cm3_mm3$`Uncertainty Equation 2`<-paste("(",cmc_cm3_mm3$`Uncertainty Equation 2`,")/1000",sep="")
+     cmc_cm3_mm3$`Unit Uncertainty Equation 2`<-"cm3"
+     
+     cmc_cm3_dimensionless<-filter(cmc,Unit=="cm3" & `Unit Uncertainty Equation 2`=="(dimensionless)")
+
+cmc_no_cm3<-filter(cmc,Unit!="cm3")
+
+cmc<-rbind(cmc_cm3_cm3,cmc_cm3_mm3,cmc_cm3_dimensionless,cmc_no_cm3)
+rm(cmc_cm3_cm3,cmc_cm3_mm3,cmc_cm3_dimensionless,cmc_no_cm3,cmc_cm3)
+
+
+cmc_cm3<-filter(cmc,Unit=="cm3")
+cmc_cm3$`Uncertainty Equation 2`<- gsub("vn","p",cmc_cm3$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_cm3$`Uncertainty Equation 2`<- gsub("V","*p",cmc_cm3$`Uncertainty Equation 2`, fixed=TRUE)
+
+  cmc_cm3_cm3<-filter(cmc_cm3,`Unit Uncertainty Equation 2`=="cm3")
+        cmc_cm3_cm3$`Uncertainty Equation 2`<-paste("(",cmc_cm3_cm3$`Uncertainty Equation 2`,")/p",sep="")
+        cmc_cm3_cm3$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+  
+  cmc_cm3_dimensionless<-filter(cmc_cm3,`Unit Uncertainty Equation 2`=="(dimensionless)")
+
+cmc_no_cm3<-filter(cmc,Unit!="cm3")
+
+cmc<-rbind(cmc_no_cm3,cmc_cm3_dimensionless,cmc_cm3_cm3)
+rm(cmc_no_cm3,cmc_cm3_dimensionless,cmc_cm3_cm3,cmc_cm3)
+
+
+##########################################################################################################
+##########################################################################################################
+############################################revisión de torque
+cmc_no_Nm<- filter(cmc,Unit!="N m")
+cmc_Nm<-    filter(cmc,Unit=="N m")
+
+cmc_Nm$`Uncertainty Equation 2`<- gsub("M","*p",cmc_Nm$`Uncertainty Equation 2`, fixed=TRUE)
+cmc_Nm$`Uncertainty Equation 2`<- gsub("T","*p",cmc_Nm$`Uncertainty Equation 2`, fixed=TRUE)
+
+   cmc_Nm_Nm<-            filter(cmc_Nm,`Unit Uncertainty Equation 2`=="(dimensionless)")
+
+   cmc_Nm_porcentaje<-    filter(cmc_Nm,`Unit Uncertainty Equation 2`=="%")
+   cmc_Nm_porcentaje$`Uncertainty Equation 2`<-paste("(",cmc_Nm_porcentaje$`Uncertainty Equation 2`,")/100",sep="")
+   cmc_Nm_porcentaje$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+
+   
+   cmc_Nm_dimensionless<- filter(cmc_Nm,`Unit Uncertainty Equation 2`=="N m")
+   cmc_Nm_dimensionless$`Uncertainty Equation 2`<-paste("(",cmc_Nm_dimensionless$`Uncertainty Equation 2`,")/p",sep="")
+   cmc_Nm_dimensionless$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+   
+cmc<-rbind(cmc_Nm_dimensionless,cmc_Nm_porcentaje,cmc_Nm_Nm,cmc_no_Nm)   
+rm(cmc_Nm_dimensionless,cmc_Nm_porcentaje,cmc_Nm_Nm,cmc_no_Nm,cmc_Nm)   
+
+##########################################################################################################
+##########################################################################################################
+########################################arreglo de incertidumbres en masa
+
+
+
+cmc_kg<-filter(cmc,Unit=="kg")
+cmc_kg$`Uncertainty Equation 2`<-gsub("vn","p",cmc_kg$`Uncertainty Equation 2`,fixed=TRUE)    
+
+    cmc_kg_no_kg_m3_µg<-filter(cmc_kg,Unit=="kg" & `E U Unit`!="kg/m3" & `E U Unit`=="µg")
+    cmc_kg_no_kg_m3_µg$`Uncertainty Equation 2`<-paste("(",cmc_kg_no_kg_m3_µg$`Uncertainty Equation 2`,")/(1000000000*p)")
+    cmc_kg_no_kg_m3_µg$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+    
+    cmc_kg_no_kg_m3_mg<-filter(cmc_kg,Unit=="kg" & `E U Unit`!="kg/m3" & `E U Unit`=="mg")
+    cmc_kg_no_kg_m3_mg$`Uncertainty Equation 2`<-paste("(",cmc_kg_no_kg_m3_mg$`Uncertainty Equation 2`,")/(1000000*p)")
+    cmc_kg_no_kg_m3_mg$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+    
+    cmc_kg_no_kg_m3_g<-filter(cmc_kg,Unit=="kg" & `E U Unit`!="kg/m3" & `E U Unit`=="g")
+    cmc_kg_no_kg_m3_g$`Uncertainty Equation 2`<-paste("(",cmc_kg_no_kg_m3_g$`Uncertainty Equation 2`,")/(1000*p)")
+    cmc_kg_no_kg_m3_g$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+    
+    cmc_kg_no_kg_m3_dimensionless<-filter(cmc_kg,Unit=="kg" & `E U Unit`!="kg/m3" & `E U Unit`=="(dimensionless)")
+    cmc_kg_no_kg_m3_dimensionless$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+    
+    cmc_kg_no_kg_m3_porcentaje<-filter(cmc_kg,Unit=="kg" & `E U Unit`!="kg/m3" & `E U Unit`=="%")
+    cmc_kg_no_kg_m3_porcentaje$`Uncertainty Equation 2`<-paste("(",cmc_kg_no_kg_m3_porcentaje$`Uncertainty Equation 2`,")/(100)")
+    cmc_kg_no_kg_m3_porcentaje$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+    
+    cmc_kg_kg_m3<-filter(cmc_kg,Unit=="kg" & `E U Unit`=="kg/m3")
+
+cmc_no_kg<-filter(cmc,Unit!= "kg")
+
+cmc<-rbind(cmc_kg_no_kg_m3_µg,cmc_kg_no_kg_m3_mg,cmc_kg_no_kg_m3_g,cmc_kg_no_kg_m3_dimensionless,cmc_kg_no_kg_m3_porcentaje,cmc_kg_kg_m3,cmc_no_kg)
+rm(indices,cmc_kg,cmc_kg_no_kg_m3_µg,cmc_kg_no_kg_m3_mg,cmc_kg_no_kg_m3_g,cmc_kg_no_kg_m3_dimensionless,cmc_kg_no_kg_m3_porcentaje,cmc_kg_kg_m3,cmc_no_kg)
+
+cmc$`Uncertainty Equation 2`<-gsub("0.000 6","0.0006",cmc$`Uncertainty Equation 2`,fixed=TRUE)
+cmc$`Uncertainty Equation 2`<-gsub("0.000 8","0.0008",cmc$`Uncertainty Equation 2`,fixed=TRUE)
+cmc$`Uncertainty Equation 2`<-gsub("0.003 2","0.0032",cmc$`Uncertainty Equation 2`,fixed=TRUE)
+
+cmc$`Uncertainty Equation 2`<-gsub("5m","5*p",cmc$`Uncertainty Equation 2`,fixed=TRUE) 
+
+
+cmc_kg<-filter(cmc,Unit=="kg")
+
+indices<-data.frame(str_which(cmc_kg$`Uncertainty Equation`,"to"))
+colnames(indices)[1]<-"fila"
+
+for(i in 1:nrow(indices)){
+  
+  a<-str_sub(cmc_kg$`Uncertainty Equation`[indices[i,1]],str_locate(cmc_kg$`Uncertainty Equation`[indices[i,1]],"to")[2]-8,str_locate(cmc_kg$`Uncertainty Equation`[indices[i,1]] ,"to")[1]-1)
+  a<-gsub("Pa", "",a, fixed=TRUE)
+  a<-eval(parse(text=a))
+  
+  b<-str_sub(cmc_kg$`Uncertainty Equation`[indices[i,1]],str_locate(cmc_kg$`Uncertainty Equation`[indices[i,1]] ,"to")[2]+2,str_locate(cmc_kg$`Uncertainty Equation`[indices[i,1]] ,"to")[2]+6)
+  b<-gsub("Pa", "",b, fixed=TRUE)
+  b<-gsub(".", "",b, fixed=TRUE)
+  b<-eval(parse(text=b))
+  
+  m<-(b-a)/(cmc_kg$`Measurand Maximum value`[indices[i,1]]-cmc_kg$`Measurand Minimum value`[indices[i,1]])
+  n<--m*cmc_kg$`Measurand Minimum value`[indices[i,1]]+a
+  cmc_kg$`Uncertainty Equation 2`[indices[i,1]]<-paste(m,"*p+",n,sep="")
+}
+cmc_kg$`Uncertainty Equation 2`<-paste("(",cmc_kg$`Uncertainty Equation 2`,")/1000",sep="")
+cmc_kg$`Uncertainty Equation 2`<-paste("(",cmc_kg$`Uncertainty Equation 2`,")/p",sep="")
+
+cmc_no_kg<-filter(cmc,Unit!="kg")
+
+cmc<-rbind(cmc_kg,cmc_no_kg)
+rm(cmc_no_kg,cmc_kg)
+
+
+
+cmc_kg<-filter(cmc,Unit=="kg")
+   cmc_kg_NA<-filter(cmc_kg,is.na(`Measurand Minimum value`))
+   cmc_kg_NA$`Measurand Minimum value`<-cmc_kg_NA$`Measurand Maximum value`
+   cmc_kg_no_NA<-filter(cmc_kg,!is.na(`Measurand Minimum value`))
+   
+cmc_no_kg<-filter(cmc,Unit!="kg")
+cmc<-rbind(cmc_kg_NA,cmc_kg_no_NA,cmc_no_kg)
+rm(cmc_no_kg,cmc_kg,cmc_kg_no_NA,cmc_kg_NA)
+
+
+##########################################################################################################
+##########################################################################################################
+########################################arreglo de incertidumbres en densidad
+cmc_g_cm3<-filter(cmc,`Unit Uncertainty Equation 2`=="g/cm3")
+     cmc_g_cm3$`Uncertainty Equation 2`<-paste("(",cmc_g_cm3$`Uncertainty Equation 2`,")*(1000/p)",sep="")
+     cmc_g_cm3$`Unit Uncertainty Equation 2`<-"(dimensionless)" 
+     
+cmc_no_g_cm3<-filter(cmc,`Unit Uncertainty Equation 2`!="g/cm3")
+cmc<-rbind(cmc_g_cm3,cmc_no_g_cm3)
+rm(cmc_g_cm3,cmc_no_g_cm3)
+
+
+cmc_g_m3<-filter(cmc,`Unit Uncertainty Equation 2`=="g/m3") 
+cmc_g_m3$`Uncertainty Equation 2`<- gsub("d","*p",cmc_g_m3$`Uncertainty Equation 2`, fixed=TRUE)
+
+     cmc_g_m3$`Uncertainty Equation 2`<-paste("(",cmc_g_m3$`Uncertainty Equation 2`,")/(1000*p)",sep="")
+     cmc_g_m3$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+cmc_no_g_m3<-filter(cmc,`Unit Uncertainty Equation 2`!="g/m3")      
+cmc<-rbind(cmc_g_m3,cmc_no_g_m3)     
+rm(cmc_g_m3,cmc_no_g_m3)     
+
+
+
+cmc_kg_m3<-filter(cmc,`Unit Uncertainty Equation 2`=="kg/m3")
+   cmc_kg_m3$`Uncertainty Equation 2`<-gsub("Q[0.0006, 0.04Δd]","((0.0006)^2 + (0.04*(p-2329.0725))^2)^0.5",cmc_kg_m3$`Uncertainty Equation 2`,fixed=TRUE)
+   cmc_kg_m3$`Uncertainty Equation 2`<-gsub("Q[0.005, 0.00002d]","max(0.02,((0.005)^2+(0.00002*p)^2)^0.5)",cmc_kg_m3$`Uncertainty Equation 2`,fixed=TRUE)
+   cmc_kg_m3$`Uncertainty Equation 2`<-gsub("vn","p",cmc_kg_m3$`Uncertainty Equation 2`,fixed=TRUE)
+   cmc_kg_m3$`Uncertainty Equation 2`<-gsub("d","*p",cmc_kg_m3$`Uncertainty Equation 2`,fixed=TRUE)
+cmc_no_kg_m3<-filter(cmc,`Unit Uncertainty Equation 2`!="kg/m3")
+
+cmc<-rbind(cmc_kg_m3,cmc_no_kg_m3) 
+rm(cmc_kg_m3,cmc_no_kg_m3) 
+
+
+
+####################  xxxx arreglo de ecuación de densidades de algunos laboratorios
+
+cmc_kg_m3<-filter(cmc,`Unit Uncertainty Equation 2`=="kg/m3")
+
+indices_primera<-data.frame(str_which(cmc_kg_m3$`Instrument or Artifact`,"Mass standard: 0.001 kg to 0.01 kg"))
+colnames(indices_primera)[1]<-"fila"
+
+primera<-cmc_kg_m3[indices_primera[1,1],]
+primera$`Instrument or Artifact`<-"Mass standard: 0.001 kg"
+primera$`Uncertainty Equation 2`<-"0.0333/0.001 - 0.333"
+
+primera[2,]<-primera[1,]
+primera$`Instrument or Artifact`[2]<-"Mass standard: 0.01 kg"
+primera$`Uncertainty Equation 2`[2]<-"0.0333/0.002 - 0.333"
+
+primera[3,]<-primera[1,]
+primera$`Instrument or Artifact`[3]<-"Mass standard: 0.005 kg"
+primera$`Uncertainty Equation 2`[3]<-"0.0333/0.005 - 0.333"
+
+primera[4,]<-primera[1,]
+primera$`Instrument or Artifact`[4]<-"Mass standard: 0.01 kg"
+primera$`Uncertainty Equation 2`[4]<-"0.0333/0.01 - 0.333"
+
+indices_segunda<-data.frame(str_which(cmc_kg_m3$`Instrument or Artifact`,"Mass standard: 0.02 kg to 0.2 kg"))
+colnames(indices_segunda)[1]<-"fila"
+
+segunda<-cmc_kg_m3[indices_segunda[1,1],]
+segunda$`Instrument or Artifact`<-"Mass standard: 0.02 kg"
+segunda$`Uncertainty Equation 2`<-"0.0111 + 0.017/0.02"
+
+segunda[2,]<-segunda[1,]
+segunda$`Instrument or Artifact`[2]<-"Mass standard: 0.05 kg"
+segunda$`Uncertainty Equation 2`[2]<-"0.0111 + 0.017/0.05"
+
+segunda[3,]<-segunda[1,]
+segunda$`Instrument or Artifact`[3]<-"Mass standard: 0.05 kg"
+segunda$`Uncertainty Equation 2`[3]<-"0.0111 + 0.017/0.05"
+
+segunda[4,]<-segunda[1,]
+segunda$`Instrument or Artifact`[3]<-"Mass standard: 0.1 kg"
+segunda$`Uncertainty Equation 2`[3]<-"0.0111 + 0.017/0.1"
+
+segunda[4,]<-segunda[1,]
+segunda$`Instrument or Artifact`[3]<-"Mass standard: 0.1 kg"
+segunda$`Uncertainty Equation 2`[3]<-"0.0111 + 0.017/0.2"
+
+
+indices_tercera<-data.frame(str_which(cmc_kg_m3$`Uncertainty Equation 2`,"0.04/m"))
+colnames(indices_tercera)[1]<-"fila"
+
+tercera<-cmc_kg_m3[indices_segunda[1,1],]
+tercera$`Instrument or Artifact`<-"Mass standard: 0.05 kg"
+tercera$`Uncertainty Equation 2`<-"0.05 + 0.04/0.05"
+
+tercera[2,]<-tercera[1,]
+tercera$`Instrument or Artifact`[2]<-"Mass standard: 0.1 kg"
+tercera$`Uncertainty Equation 2`[2]<-"0.05 + 0.04/0.1"
+
+tercera[3,]<-tercera[1,]
+tercera$`Instrument or Artifact`[3]<-"Mass standard: 0.2 kg"
+tercera$`Uncertainty Equation 2`[3]<-"0.05 + 0.04/0.2"
+
+tercera[4,]<-tercera[1,]
+tercera$`Instrument or Artifact`[4]<-"Mass standard: 0.5 kg"
+tercera$`Uncertainty Equation 2`[4]<-"0.05 + 0.04/0.5"
+
+
+indices_cuarta<-data.frame(str_which(cmc_kg_m3$`Instrument or Artifact`,"Mass standard: 2 g  to 20 g"))
+colnames(indices_cuarta)[1]<-"fila"
+
+cuarta<-cmc_kg_m3[indices_cuarta[1,1],]
+cuarta$`Instrument or Artifact`<-"Mass standard: 2 g"
+cuarta$`Uncertainty Equation 2`<-"1.0 + 18/2"
+
+cuarta[2,]<-cuarta[1,]
+cuarta$`Instrument or Artifact`[2]<-"Mass standard: 5 g"
+cuarta$`Uncertainty Equation 2`[2]<-"1.0 + 18/5"
+
+cuarta[3,]<-cuarta[1,]
+cuarta$`Instrument or Artifact`[3]<-"Mass standard: 10 g"
+cuarta$`Uncertainty Equation 2`[3]<-"1.0 + 18/10"
+
+cuarta[4,]<-cuarta[1,]
+cuarta$`Instrument or Artifact`[4]<-"Mass standard: 20 g"
+cuarta$`Uncertainty Equation 2`[4]<-"1.0 + 18/20"
+
+
+indices_quinta<-data.frame(str_which(cmc_kg_m3$`Instrument or Artifact`,"Mass standard: 0.001 kg to 0.05 kg"))
+colnames(indices_quinta)[1]<-"fila"
+	
+quinta<-cmc_kg_m3[indices_quinta[1,1],]
+quinta$`Instrument or Artifact`<-"Mass standard: 0.001 kg"
+quinta$`Uncertainty Equation 2`<-"0.408 + 0.0396/0.001"
+
+quinta[2,]<-quinta[1,]
+quinta$`Instrument or Artifact`[2]<-"Mass standard: 0.002 kg"
+quinta$`Uncertainty Equation 2`[2]<-"0.408 + 0.0396/0.002"
+
+quinta[3,]<-quinta[1,]
+quinta$`Instrument or Artifact`[3]<-"Mass standard: 0.005 kg"
+quinta$`Uncertainty Equation 2`[3]<-"0.408 + 0.0396/0.005"
+
+quinta[4,]<-quinta[1,]
+quinta$`Instrument or Artifact`[4]<-"Mass standard: 0.01 kg"
+quinta$`Uncertainty Equation 2`[4]<-"0.408 + 0.0396/0.01"
+
+quinta[5,]<-quinta[1,]
+quinta$`Instrument or Artifact`[5]<-"Mass standard: 0.02 kg"
+quinta$`Uncertainty Equation 2`[5]<-"0.408 + 0.0396/0.02"
+
+quinta[6,]<-quinta[1,]
+quinta$`Instrument or Artifact`[6]<-"Mass standard: 0.05 kg"
+quinta$`Uncertainty Equation 2`[6]<-"0.408 + 0.0396/0.05"
+
+
+#####
+sexta<-filter(cmc_kg_m3,`Uncertainty Equation 2`=="0.1444 + 0.0528/m")
+sexta$`Instrument or Artifact`<-"Mass standard: 0.05 kg"
+sexta$`Uncertainty Equation 2`<-"0.1444 + 0.0528/0.05"
+
+sexta[2,]<-sexta[1,]
+sexta$`Instrument or Artifact`[2]<-"Mass standard: 0.1 kg"
+sexta$`Uncertainty Equation 2`[2]<-"0.1444 + 0.0528/0.1"
+
+sexta[3,]<-sexta[1,]
+sexta$`Instrument or Artifact`[3]<-"Mass standard: 0.2 kg"
+sexta$`Uncertainty Equation 2`[3]<-"0.1444 + 0.0528/0.2"
+
+sexta[4,]<-sexta[1,]
+sexta$`Instrument or Artifact`[4]<-"Mass standard: 0.5 kg"
+sexta$`Uncertainty Equation 2`[4]<-"0.1444 + 0.0528/0.5"
+
+reemplazo<-rbind(primera,segunda,tercera,cuarta,quinta,sexta)
+
+rm(primera,segunda,tercera,cuarta,quinta,sexta,indices_primera,indices_segunda,indices_tercera,indices_cuarta,indices_quinta)
+
+listado<-c("Mass standard: 0.001 kg to 0.01 kg","Mass standard: 0.001 kg to 0.05 kg","Mass standard: 0.02 kg to 0.2 kg",
+           "Mass standard: 0.05 kg to 0.5 kg","Mass standard: 2 g  to 20 g")
+
+cmc_kg_m3_sin_filas_trabajadas<-filter(cmc_kg_m3,!`Instrument or Artifact` %in% listado)
+cmc_kg_m3<-rbind(cmc_kg_m3_sin_filas_trabajadas,reemplazo)
+
+cmc_no_kg_m3<-filter(cmc,`Unit Uncertainty Equation 2`!="kg/m3")
+
+cmc<-rbind(cmc_no_kg_m3,
+           cmc_kg_m3)
+rm(reemplazo,cmc_kg_m3_sin_filas_trabajadas)
+###################  xxxx 
+
+###################arreglo de la densidad de la esfera 30 g a 1000 g
+
+
+cmc_esfera<-filter(cmc,cmc$`Uncertainty Equation 2`=="2.3/m")
+
+cmc_esfera$Parameters<-"30 g Temperature : 20 °C"
+cmc_esfera$`Uncertainty Equation 2`<-"2.3/30"
+
+cmc_esfera[2,]<-cmc_esfera[1,]
+cmc_esfera$Parameters[2]<-                 "50 g Temperature : 20 °C"
+cmc_esfera$`Uncertainty Equation 2`[2]<-   "2.3/50"
+
+cmc_esfera[3,]<-cmc_esfera[1,]
+cmc_esfera$Parameters[3]<-                 "100 g Temperature : 20 °C"
+cmc_esfera$`Uncertainty Equation 2`[3]<-   "2.3/100"
+
+
+cmc_esfera[4,]<-cmc_esfera[1,]
+cmc_esfera$Parameters[4]<-                 "200 g Temperature : 20 °C"
+cmc_esfera$`Uncertainty Equation 2`[4]<-   "2.3/200"
+
+cmc_esfera[5,]<-cmc_esfera[1,]
+cmc_esfera$Parameters[5]<-                 "500 g Temperature : 20 °C"
+cmc_esfera$`Uncertainty Equation 2`[5]<-   "2.3/500"
+
+cmc_esfera[6,]<-cmc_esfera[1,]
+cmc_esfera$Parameters[6]<-                 "1000 g Temperature : 20 °C"
+cmc_esfera$`Uncertainty Equation 2`[6]<-   "2.3/1000"
+
+cmc_no_esfera<-filter(cmc,cmc$`Uncertainty Equation 2`!="2.3/m")
+
+cmc<-rbind(cmc_esfera, cmc_no_esfera)
+rm(cmc_esfera, cmc_no_esfera)
+
+
+
+###################
+cmc_kg_m3    <- filter(cmc,cmc$Unit=="kg/m3")
+
+             cmc_kg_m3_kg_m3<-filter(cmc_kg_m3,cmc_kg_m3$`Unit Uncertainty Equation 2`=="kg/m3")
+             cmc_kg_m3_kg_m3$`Uncertainty Equation 2`<-paste("(",cmc_kg_m3_kg_m3$`Uncertainty Equation 2`,")/p",sep="")
+             cmc_kg_m3_kg_m3$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+             
+             cmc_kg_m3_porcentaje<-filter(cmc_kg_m3,cmc_kg_m3$`Unit Uncertainty Equation 2`=="%")
+             cmc_kg_m3_porcentaje$`Uncertainty Equation 2`<-paste("(",cmc_kg_m3_porcentaje$`Uncertainty Equation 2`,")/100",sep="")
+             cmc_kg_m3_porcentaje$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+             
+             
+             cmc_kg_m3_adimencional<-filter(cmc_kg_m3,cmc_kg_m3$`Unit Uncertainty Equation 2`=="(dimensionless)") 
+
+cmc_no_kg_m3 <- filter(cmc,cmc$Unit!="kg/m3")
+
+cmc<-rbind(cmc_kg_m3_kg_m3, cmc_kg_m3_porcentaje, cmc_kg_m3_adimencional, cmc_no_kg_m3)
+rm(cmc_kg_m3_kg_m3,cmc_kg_m3_porcentaje,cmc_kg_m3_adimencional,cmc_no_kg_m3,cmc_kg_m3)
+
+
+
+cmc_kg_m3<-filter(cmc,Unit=="kg/m3")
+           cmc_kg_m3$`Uncertainty Equation 2`<- gsub("V","p",cmc_kg_m3$`Uncertainty Equation 2`, fixed=TRUE)
+           cmc_kg_m3$`Uncertainty Equation 2`<- gsub("vn","p",cmc_kg_m3$`Uncertainty Equation 2`, fixed=TRUE)
+
+cmc_no_kg_m3<-filter(cmc,Unit!="kg/m3")
+
+cmc<-rbind(cmc_kg_m3,cmc_no_kg_m3)
+rm(cmc_kg_m3,cmc_no_kg_m3)
+
+
+
+
+########################################################################################################
+##############################################Arreglo de incertidumbres de fuerza
+cmc_N<-filter(cmc,Unit=="N")
+    cmc_N_porcentaje<-filter(cmc_N,cmc_N$`Unit Uncertainty Equation 2`=="%")
+    
+    cmc_N_porcentaje<-filter(cmc_N,cmc_N$`Unit Uncertainty Equation 2`=="%")
+    cmc_N_porcentaje$`Uncertainty Equation 2`<-paste("(",cmc_N_porcentaje$`Uncertainty Equation 2`,")/100",sep="")
+    cmc_N_porcentaje$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+    
+    cmc_N_no_porcentaje<-filter(cmc_N,cmc_N$`Unit Uncertainty Equation 2`!="%")
+    
+    
+cmc_no_N<-filter(cmc,Unit!="N")
+
+cmc<-rbind(cmc_no_N,cmc_N_no_porcentaje,cmc_N_porcentaje)
+rm(cmc_no_N,cmc_N_no_porcentaje,cmc_N_porcentaje,cmc_N)
+
+
+
+
+cmc_N<-filter(cmc,Unit=="N")
+        cmc_N_kN<-filter(cmc_N,cmc_N$`Unit Uncertainty Equation 2`=="kN")
+        cmc_N_kN$`Uncertainty Equation 2`<-gsub("F","*p",cmc_N_kN$`Uncertainty Equation 2`,fixed = TRUE)
+        cmc_N_kN$`Uncertainty Equation 2`<-paste("(",cmc_N_kN$`Uncertainty Equation 2`,")*1000",sep="")
+        cmc_N_kN$`Uncertainty Equation 2`<-paste("(",cmc_N_kN$`Uncertainty Equation 2`,")/p",sep="")
+        cmc_N_kN$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+
+cmc_N_no_kN<-filter(cmc_N,cmc_N$`Unit Uncertainty Equation 2`!="kN")
+
+cmc_no_N<-filter(cmc,Unit!="N")
+
+
+cmc<-rbind(cmc_N_kN,cmc_N_no_kN,cmc_no_N)
+rm(cmc_N_kN,cmc_N_no_kN,cmc_no_N,cmc_N)
+
+
+
+
+
+cmc_N<-filter(cmc,Unit=="N")
+          cmc_N_MN<-filter(cmc_N,cmc_N$`Unit Uncertainty Equation 2`=="MN")
+          cmc_N_MN$`Uncertainty Equation 2`<-gsub("F","*p",cmc_N_MN$`Uncertainty Equation 2`,fixed = TRUE)
+          cmc_N_MN$`Uncertainty Equation 2`<-paste("(",cmc_N_MN$`Uncertainty Equation 2`,")*1000",sep="")
+          cmc_N_MN$`Uncertainty Equation 2`<-paste("(",cmc_N_MN$`Uncertainty Equation 2`,")/p",sep="")
+          cmc_N_MN$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+cmc_N_no_MN<-filter(cmc_N,cmc_N$`Unit Uncertainty Equation 2`!="MN")
+
+cmc_no_N<-filter(cmc,Unit!="N")    
+cmc<-rbind(cmc_N_MN,cmc_N_no_MN,cmc_no_N)
+rm(cmc_N_MN,cmc_N_no_MN,cmc_no_N,cmc_N)
+          
+
+
+
+cmc_N<-filter(cmc,Unit=="N")
+            cmc_N_N<-filter(cmc_N,cmc_N$`Unit Uncertainty Equation 2`=="N")
+            cmc_N_N$`Uncertainty Equation 2`<-gsub("F","*p",cmc_N_N$`Uncertainty Equation 2`,fixed = TRUE)
+            cmc_N_N$`Uncertainty Equation 2`<-paste("(",cmc_N_N$`Uncertainty Equation 2`,")/p",sep="")
+            cmc_N_N$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+cmc_N_no_N<-filter(cmc_N,cmc_N$`Unit Uncertainty Equation 2`!="N")            
+cmc_no_N<-filter(cmc,Unit!="N")  
+cmc<-rbind(cmc_N_N,cmc_N_no_N,cmc_no_N)
+rm(cmc_N_N,cmc_N_no_N,cmc_no_N,cmc_N)    
+
+
+
+
+
+cmc_N_m<-filter(cmc,Unit=="N/m")
+cmc_N_m$`Uncertainty Equation 2`<-paste("(",cmc_N_m$`Uncertainty Equation 2`,")/100",sep="")
+cmc_N_m$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+
+cmc_no_N_m<-filter(cmc,Unit!="N/m")  
+cmc<-rbind(cmc_N_m,cmc_no_N_m)
+
+rm(cmc_N_m,cmc_no_N_m) 
+########################################################################
+###############################################arreglo de valores de aceleración de gravedad
+
+cmc_m_s2<-filter(cmc,Unit=="m/s2")
+cmc_no_m_s2<-filter(cmc,Unit!="m/s2")
+cmc_m_s2$`Uncertainty Equation 2`<-paste("(",cmc_m_s2$`Uncertainty Equation 2`,")/p",sep="")
+cmc_m_s2$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+
+cmc<-rbind(cmc_m_s2,cmc_no_m_s2)
+rm(cmc_m_s2,cmc_no_m_s2) 
+
+########################################################################
+###############################################arreglo de valores de Thermal energy
+cmc_K<-filter(cmc,Unit=="K")
+cmc_K_K<-filter(cmc_K,`Unit Uncertainty Equation 2`=="mK")
+         cmc_K_K$`Uncertainty Equation 2`<-paste("(",cmc_K_K$`Uncertainty Equation 2`,")/1000",sep="")
+         cmc_K_K$`Uncertainty Equation 2`<-paste("(",cmc_K_K$`Uncertainty Equation 2`,")/p",sep="")
+         cmc_K_K$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+cmc_K_no_K<-filter(cmc_K,`Unit Uncertainty Equation 2`!="mK")
+
+cmc_no_K<-filter(cmc,Unit!="K")
+cmc<-rbind(cmc_no_K,cmc_K_no_K,cmc_K_K)
+rm(cmc_no_K,cmc_K_no_K,cmc_K_K)
+
+
+cmc_K<-filter(cmc,Unit=="K")
+     cmc_K_porcentaje<-filter(cmc_K,`Unit Uncertainty Equation 2`=="%")
+     cmc_K_porcentaje$`Uncertainty Equation 2`<-paste("(",cmc_K_porcentaje$`Uncertainty Equation 2`,")/100",sep="")
+     cmc_K_porcentaje$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+cmc_K_no_porcentaje<-filter(cmc_K,`Unit Uncertainty Equation 2`!="%")
+     
+cmc_no_K<-filter(cmc,Unit!="K")
+cmc<-rbind(cmc_no_K,cmc_K_no_porcentaje,cmc_K_porcentaje)
+rm(cmc_no_K,cmc_K_no_porcentaje,cmc_K_porcentaje,cmc_K)
+
+
+cmc_W<-filter(cmc,Unit=="W")
+cmc_W$`Uncertainty Equation 2`<-paste("(",cmc_W$`Uncertainty Equation 2`,")/100",sep="")
+cmc_W$`Unit Uncertainty Equation 2`<-"(dimensionless)"
+cmc_no_W<-filter(cmc,Unit!="W")
+
+cmc<-rbind(cmc_W,cmc_no_W)
+rm(cmc_W,cmc_no_W)
+
+cmc_kg<-filter(cmc,Unit=="kg")
+       cmc_kg_sin_density_kriss<-filter(cmc_kg,Quantity!="Density of solid")
+cmc_no_kg<-filter(cmc,Unit!="kg")
+cmc<-rbind(cmc_kg_sin_density_kriss,cmc_no_kg)
+rm(cmc_kg_sin_density_kriss,cmc_no_kg,cmc_kg)
+##########################################################################################################
+##########################################################################################################
+##########################################################################################################
+##########################################################################################################
+##########################################################################################################
+##########################################################################################################
+##########################################################################################################
+##########################################################################################################
+##########################################################################################################
+##########################################################################################################
+##########################################################################################################
+
+#Generación de tabla con clasificación
+#Niveles_MMR<-unique(select(cmc,Quantity,`Instrument or Artifact`,`Measurement method`,Parameters,Unit,`E U Unit`))
+#write.xlsx(Niveles_MMR,"Planilla_Niveles_NMR.xlsx",row.names=FALSE,append=TRUE,sheetName="provisional")
+#Lectura de tabla con clasificación
+clasificacion<-read.xlsx("Planilla_Niveles_NMR.xlsx",sheetName="Cruce",check.names=FALSE)
+
+
+
+cmc_n<-c()
+cmc_n<-as.data.frame(cmc_n)
+
+for(i in 1:nrow(cmc)){
+  cmc_i<-cmc[i,]
+
+  cmc_n_i<-data.frame("Orden"=c(0:10))
+  cmc_n_i$Serie<-i
+  cmc_n_i$porcentaje<-0.1*cmc_n_i$Orden
+  diferencia<-cmc_i$`Measurand Maximum value`[1]-cmc_i$`Measurand Minimum value`[1]
+  
+  cmc_n_i$valor<-diferencia*cmc_n_i$porcentaje+cmc_i$`Measurand Minimum value`[1]
+  cmc_n_i$"Unit"                                   <-cmc_i$"Unit"[1]
+    cmc_n_i$TAG                                      <-cmc_i$TAG[1]
+    cmc_n_i$"Country code"                           <-cmc_i$"Country code"[1]
+    cmc_n_i$"Institute"                              <-cmc_i$"Institute"[1]
+    cmc_n_i$"Quantity"                               <-cmc_i$"Quantity"[1]
+    cmc_n_i$"Instrument or Artifact"                 <-cmc_i$"Instrument or Artifact"[1]
+    cmc_n_i$"Measurement method"                     <-cmc_i$"Measurement method"[1]
+    cmc_n_i$"International standard"                 <-cmc_i$"International standard"[1]
+    cmc_n_i$"Parameters"                             <-cmc_i$"Parameters"[1]
+   # cmc_n_i$"Measurand Minimum value"                <-cmc_i$"Measurand Minimum value"[1]
+   # cmc_n_i$"Measurand Maximum value"                <-cmc_i$"Measurand Maximum value"[1]
+   # cmc_n_i$"Expanded uncertainty Minimum value"     <-cmc_i$"Expanded uncertainty Minimum value"[1]
+   # cmc_n_i$"Expanded uncertainty Maximum value"     <-cmc_i$"Expanded uncertainty Maximum value"[1]
+     cmc_n_i$"E U Unit"                               <-cmc_i$"E U Unit"[1]
+   # cmc_n_i$"Coverage factor"                        <-cmc_i$"Coverage factor"[1]
+   # cmc_n_i$"Level of Confidence in %"               <-cmc_i$"Level of Confidence in %"[1]
+   # cmc_n_i$"Type of uncertainty"                    <-cmc_i$"Type of uncertainty"[1]
+    cmc_n_i$"Uncertainty Equation"                   <-cmc_i$"Uncertainty Equation"[1]
+    cmc_n_i$"Comment Uncertainty Equation"           <-cmc_i$"Comment Uncertainty Equation"[1]
+  # cmc_n_i$"Uncertainty Matrix Label"               <-cmc_i$"Uncertainty Matrix Label"[1]
+    cmc_n_i$"Comments"                               <-cmc_i$"Comments"[1]
+    cmc_n_i$"Approval date"                          <-cmc_i$"Approval date"[1]
+    # cmc_n_i$"NMI Service Identifier"                 <-cmc_i$"NMI Service Identifier"[1]
+    # cmc_n_i$"Link for NMI Service Identifier"        <-cmc_i$"Link for NMI Service Identifier"[1]
+    cmc_n_i$"Uncertainty Equation 2"                 <-cmc_i$"Uncertainty Equation 2"[1]
+    cmc_n_i$"Unit Uncertainty Equation 2"            <-cmc_i$"Unit Uncertainty Equation 2"[1]
+      
+  cmc_n_i[nrow(cmc_n_i)+1,]<-cmc_n_i[nrow(cmc_n_i),]
+  cmc_n_i[nrow(cmc_n_i),1]<-cmc_n_i[nrow(cmc_n_i)-1,1]+1
+  cmc_n<-rbind(cmc_n,cmc_n_i)
+}
+
+
+
+cmc_n$"Uncertainty (k=2)"<-cmc_n$`Uncertainty Equation 2`
+
+for(i in 1:nrow(cmc_n)){
+  print(i)
+  cmc_n$"Uncertainty (k=2)"[i]<-gsub("p",cmc_n$valor[i],cmc_n$"Uncertainty (k=2)"[i], fixed=TRUE)
+  cmc_n$"Uncertainty (k=2)"[i]<-eval(parse(text=cmc_n$"Uncertainty (k=2)"[i]))
+}
+
+
+
+indices<-data.frame(str_which(cmc_n$Orden,"11"))
+colnames(indices)[1]<-"fila"
+
+for(i in 1:nrow(cmc_n)){
+  cmc_n$"Uncertainty (k=2)"[indices[i,1]]<-NA
+  }
+
+
+
+series<-as.numeric(as.character(max(cmc_n$Serie)))
+cmc_n_2<-c()
+cmc_n_2<-as.data.frame(cmc_n_2)
+
+for(i in 1:series){
+    serie_i<-filter(cmc_n,Serie==i)
+    print(i)
+
+    if(serie_i$valor[1]==serie_i$valor[2]){serie_i<-serie_i[1,]}
+   
+    cmc_n_2<-rbind(serie_i,cmc_n_2)
+}
+
+rm(indices,cmc_i,cmc_n_i,serie_i)
+
+
+
+
+cmc_n_3<-left_join(cmc_n_2,clasificacion)
+
+write.csv(cmc_n_3,"/Users/franciscogarcia/Dropbox/working\ directory\ R/CMCs2020/graficos_de_CMCs/WWW/cmc_n_mass_related.csv", row.names=FALSE)
+
+
+}
+

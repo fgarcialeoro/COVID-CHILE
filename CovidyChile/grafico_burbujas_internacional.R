@@ -159,8 +159,9 @@ avance_2_hoy<-filter(avance_2_hoy,`Deaths per 100000 inhabitants`>0)
 avance_2_hoy<-filter(avance_2_hoy,avance_2_hoy$`Government Effectiveness, percentil`>65)
 chile<-filter(avance_2_hoy,`Country Name`=="Chile")
 g<-ggplot(avance_2_hoy,aes(`Government Effectiveness, percentil`,`Deaths per 100000 inhabitants`, label = `Country Name`))+geom_point()
-g<-g+geom_point(data=chile,colour="blue",size=1.4)+geom_text(size = 2.5,vjust = 0.1, nudge_y = 0.05,angle=10)
+g<-g+geom_text(size = 2.5,vjust = 0.1, nudge_y = 0.05,angle=10)
 g<-g+scale_y_log10()
 g
 
 
++geom_point(data=chile,colour="blue",size=1.4)+
