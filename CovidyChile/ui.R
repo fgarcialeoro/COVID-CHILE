@@ -85,7 +85,7 @@ ui <- fluidPage(
                    ),
                  mainPanel(
                    plotlyOutput("todos"),br(),br(),
-                   plotlyOutput("var_tasa"),div("En este gráfico se presenta la tasa de crecimiento evaluada para cada día, utilizando un modelo exponencial.  Hasta el día 10 se consideraron todos los días previos, luego se tomaron en cuenta rangos de cinco días"),br(),br()
+                   plotlyOutput("var_tasa"),div("En este gráfico se presenta la tasa de crecimiento evaluada para cada día, utilizando un modelo exponencial.  Hasta el día 10 se consideraron todos los días previos, luego se tomaron en cuenta intervalos de cinco días"),br(),br()
                                  )
         )),
         
