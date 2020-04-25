@@ -1,3 +1,23 @@
+library(xlsxjars)
+library(xlsx)
+library(dplyr)
+library(tidyr)
+library(corrplot)
+library(ggplot2)
+library(lubridate)
+library(googleVis)
+library(chilemapas)
+library(scales)
+library(plotly)
+library(rgdal)
+library(leaflet)
+library(sp)
+library(rmapshaper)
+library(stringi)
+library("deSolve")
+
+
+
 Poblacion<-19458310
 avance_todo_chile<-read.csv("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/Datos-COVID19/output/producto5/TotalesNacionales.csv",header=T,check.names=F)
 avance_todo_chile<-gather(avance_todo_chile,key="Tipo de dato",value = "casos","2020-03-03":ncol(avance_todo_chile))
@@ -57,5 +77,92 @@ tasa$`u(Tasa de crecimiento)`<-NULL
 tasa$`U(Tasa de crecimiento), 95%`<-NULL
 
 tasa<-left_join(tasa,avance_todo_chile)
+
+
+
+
+
+
+
+tasa_rec<-c()
+tasa_rec_i<-c()
+dias<-avance_todo_chile$Fecha
+
+for (i in 17:length(dias)){
+
+  if(i<=25){
+    avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>dias[14])
+    model<-lm(log(`Casos recuperados`)~Fecha,avance_todo_chile_i)
+    summary(model)
+    tasa_rec_i$Fecha<-dias[i]
+    tasa_rec_i<-as.data.frame(tasa_rec_i)
+    tasa_rec_i$"tasa_rec de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+    tasa_rec_i$"u(tasa_rec de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+    tasa_rec_i$n<-nrow(avance_todo_chile_i)
+    tasa_rec_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+    tasa_rec_i$"U(tasa_rec de crecimiento), 95%"<-(tasa_rec_i$"u(tasa_rec de crecimiento)"/sqrt(tasa_rec_i$n))*tasa_rec_i$t
+    tasa_rec<-rbind(tasa_rec_i,tasa_rec)
+  }else{
+    avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
+    model<-lm(log(`Casos recuperados`)~Fecha,avance_todo_chile_i)
+    summary(model)
+    tasa_rec_i$Fecha<-dias[i]
+    tasa_rec_i<-as.data.frame(tasa_rec_i)
+    tasa_rec_i$"tasa_rec de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+    tasa_rec_i$"u(tasa_rec de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+    tasa_rec_i$n<-nrow(avance_todo_chile_i)
+    tasa_rec_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+    tasa_rec_i$"U(tasa_rec de crecimiento), 95%"<-(tasa_rec_i$"u(tasa_rec de crecimiento)"/sqrt(tasa_rec_i$n))*tasa_rec_i$t
+    tasa_rec<-rbind(tasa_rec_i,tasa_rec)
+    print(i)
+  }
+  
+  
+}
+
+tasa_rec$`tasa_rec de crecimiento /%`<-tasa_rec$`tasa_rec de crecimiento`*100
+tasa_rec$`U(tasa_rec de crecimiento)/%, 95%`<-tasa_rec$`U(tasa_rec de crecimiento), 95%`*100
+tasa_rec$`tasa_rec de crecimiento`<-NULL
+tasa_rec$`u(tasa_rec de crecimiento)`<-NULL
+tasa_rec$`U(tasa_rec de crecimiento), 95%`<-NULL
+
+tasa<-left_join(tasa,tasa_rec)
+
+
 write.csv(tasa,"www/tasa_crecimiento_nacional.csv",row.names = FALSE)
 
+
+#####################SIR
+sir_equations <- function(time, variables, parameters) {
+  with(as.list(c(variables, parameters)), {
+    dS <- -beta * I * S
+    dI <-  beta * I * S - gamma * I
+    dR <-  gamma * I
+    return(list(c(dS, dI, dR)))
+  })
+}
+
+
+
+
+parameters_values <- c(
+  beta  = 0.02, # infectious contact rate (/person/day)
+  gamma = 0.08   # recovery rate (/day)
+)
+
+initial_values <- c(
+  S = 20000000,  # number of susceptibles at time = 0
+  I =   1,  # number of infectious at time = 0
+  R =   0   # number of recovered (and immune) at time = 0
+)
+
+time_values <- seq(0, 10)
+
+sir_values_1 <- ode(
+  y = initial_values,
+  times = time_values,
+  func = sir_equations,
+  parms = parameters_values 
+)
+
+sir_values_1

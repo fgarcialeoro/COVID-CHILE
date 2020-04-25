@@ -47,64 +47,6 @@ write.csv(avance_contagiados_chile,"www/avance_contagiados_chile.csv",row.names 
 
 
 
-########################################################################################################
-###############estimación a nivel país de variacion de tasa#############################################
-########################################################################################################
-avance_todo_chile<-read.xlsx("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/datos_minsal.xlsx",sheetName ="Avance_nacional")
-colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Casos.confirmados.cada.100000.habitantes")] <- "Casos confirmados acumulados cada 100000 habitantes"
-colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Confirmados.acumulados")] <- "Casos confirmados acumulados"
-write.csv(avance_todo_chile,"www/avance_todo_chile.csv",row.names = FALSE)
-
-
-plot(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,data=avance_todo_chile) 
-model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile)
-summary(model)[["coefficients"]]
-
-
-
-tasa<-c()
-tasa_i<-c()
-dias<-avance_todo_chile$Fecha
-
-for (i in 3:length(dias)){
-  
-  if(i<=10){
-  avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i])
-  model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
-  summary(model)
-  tasa_i$Fecha<-dias[i]
-  tasa_i<-as.data.frame(tasa_i)
-  tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
-  tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
-  tasa_i$n<-nrow(avance_todo_chile_i)
-  tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
-  tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
-  tasa<-rbind(tasa_i,tasa)
-  }else{
-    avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
-    model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
-    summary(model)
-    tasa_i$Fecha<-dias[i]
-    tasa_i<-as.data.frame(tasa_i)
-    tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
-    tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
-    tasa_i$n<-nrow(avance_todo_chile_i)
-    tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
-    tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
-    tasa<-rbind(tasa_i,tasa)
-    
-  }
-  
-  
-  }
-
-tasa$`Tasa de crecimiento /%`<-tasa$`Tasa de crecimiento`*100
-tasa$`U(Tasa de crecimiento)/%, 95%`<-tasa$`U(Tasa de crecimiento), 95%`*100
-tasa$`Tasa de crecimiento`<-NULL
-tasa$`u(Tasa de crecimiento)`<-NULL
-tasa$`U(Tasa de crecimiento), 95%`<-NULL
-write.csv(tasa,"www/tasa_crecimiento_nacional.csv",row.names = FALSE)
-
 
 ################################################################################################
 ##############################Mapas por comuna##################################################
