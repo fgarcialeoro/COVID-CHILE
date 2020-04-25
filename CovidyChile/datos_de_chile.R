@@ -55,6 +55,7 @@ colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Casos.confirmados
 colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Confirmados.acumulados")] <- "Casos confirmados acumulados"
 write.csv(avance_todo_chile,"www/avance_todo_chile.csv",row.names = FALSE)
 
+
 plot(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,data=avance_todo_chile) 
 model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile)
 summary(model)[["coefficients"]]

@@ -1,0 +1,61 @@
+Poblacion<-19458310
+avance_todo_chile<-read.csv("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/Datos-COVID19/output/producto5/TotalesNacionales.csv",header=T,check.names=F)
+avance_todo_chile<-gather(avance_todo_chile,key="Tipo de dato",value = "casos","2020-03-03":ncol(avance_todo_chile))
+avance_todo_chile<-spread(avance_todo_chile,Fecha,casos)
+colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Tipo de dato")] <- "Fecha"
+avance_todo_chile$"Casos confirmados acumulados cada 100000 habitantes"<-100000*avance_todo_chile$`Casos totales`/Poblacion
+avance_todo_chile$Fecha<-as.Date(avance_todo_chile$Fecha)
+avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`<-as.numeric(avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`)
+
+
+plot(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,data=avance_todo_chile) 
+model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile)
+summary(model)[["coefficients"]]
+
+
+
+tasa<-c()
+tasa_i<-c()
+dias<-avance_todo_chile$Fecha
+
+for (i in 3:length(dias)){
+  
+  if(i<=10){
+    avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i])
+    model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+    summary(model)
+    tasa_i$Fecha<-dias[i]
+    tasa_i<-as.data.frame(tasa_i)
+    tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+    tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+    tasa_i$n<-nrow(avance_todo_chile_i)
+    tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+    tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
+    tasa<-rbind(tasa_i,tasa)
+  }else{
+    avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
+    model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+    summary(model)
+    tasa_i$Fecha<-dias[i]
+    tasa_i<-as.data.frame(tasa_i)
+    tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+    tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+    tasa_i$n<-nrow(avance_todo_chile_i)
+    tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+    tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
+    tasa<-rbind(tasa_i,tasa)
+    
+  }
+  
+  
+}
+
+tasa$`Tasa de crecimiento /%`<-tasa$`Tasa de crecimiento`*100
+tasa$`U(Tasa de crecimiento)/%, 95%`<-tasa$`U(Tasa de crecimiento), 95%`*100
+tasa$`Tasa de crecimiento`<-NULL
+tasa$`u(Tasa de crecimiento)`<-NULL
+tasa$`U(Tasa de crecimiento), 95%`<-NULL
+
+tasa<-left_join(tasa,avance_todo_chile)
+write.csv(tasa,"www/tasa_crecimiento_nacional.csv",row.names = FALSE)
+

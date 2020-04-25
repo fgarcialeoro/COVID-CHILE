@@ -77,15 +77,24 @@ ui <- fluidPage(
                  ),
         
         
-        tabPanel("Casos confirmados acumulados a nivel nacional",
+        tabPanel("Resumen nacional",
+                 sidebarLayout(
+                   sidebarPanel(
+                     img(src ="logocsc.png", align = "center"),
+                     uiOutput("tab3")
+                   ),
                  mainPanel(
-                   plotlyOutput("nacional"),br(),br(),
-                   plotlyOutput("var_tasa"),div("En este gráfico se presenta la tasa de crecimiento evaluada para cada día, utilizando un modelo exponencial.  Hasta el día 10 se consideraron todos los días previos, luego se tomaron en cuenta rangos de cinco días"),br()
-                 )
-        ),
+                   plotlyOutput("todos"),br(),br(),
+                   plotlyOutput("var_tasa"),div("En este gráfico se presenta la tasa de crecimiento evaluada para cada día, utilizando un modelo exponencial.  Hasta el día 10 se consideraron todos los días previos, luego se tomaron en cuenta rangos de cinco días"),br(),br()
+                                 )
+        )),
         
         tabPanel("Mundo: COVID y otros indicadores",
-                 
+                 sidebarLayout(
+                   sidebarPanel(
+                     img(src ="logocsc.png", align = "center"),
+                     uiOutput("tab4")
+                   ),
                  mainPanel(
                    div(strong("Variación del número de fallecidos a nivel internacional, en relación con variables económicas"),"Aun cuando los valores se estabilizarán en el mediano plazo, ya es posible apreciar algunas tendencias. El círculo rojo representa a Chile."),
                    plotOutput("matriz"),br(),br(),
@@ -93,7 +102,7 @@ ui <- fluidPage(
                    htmlOutput("distPlot")
                    
                    )
-                 )
+                 ))
        
 )
 )

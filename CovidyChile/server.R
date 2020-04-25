@@ -32,6 +32,8 @@ server <- function(session,input, output) {
 url <- a("www.commonsense.cl",href="https://www.commonsense.cl")
 output$tab <- renderUI({url})
 output$tab1 <- renderUI({url})
+output$tab3 <- renderUI({url})
+output$tab4 <- renderUI({url})
   ######################################################3
   
   
@@ -62,11 +64,14 @@ output$matriz <- renderPlot(
 
 output$nacional<-renderPlotly({
   
-  avance_contagiados_nacional<-read.csv("www/avance_todo_chile.csv",check.names = FALSE)
+  avance_contagiados_nacional<-read.csv("www/tasa_crecimiento_nacional.csv",check.names = FALSE)
   avance_contagiados_nacional$Fecha<-as.Date(avance_contagiados_nacional$Fecha)
   avance_contagiados_t<-avance_contagiados_nacional
   w<-ggplot(avance_contagiados_t,aes(Fecha,`Casos confirmados acumulados cada 100000 habitantes`))+geom_point(color=Verde_oscuro)
   w<-w+ggtitle("Valor acumulado de casos confirmados por cada 100000 habitantes")
+  w<-w+ylab("Valor acumulado de casos confirmados \n  por cada 100000 habitantes")
+  w<-w+scale_x_date(breaks="weeks")
+  w<-w+theme(axis.text.x = element_text(angle = 90))+theme(axis.title.y = element_text(size = 9))
   w<-ggplotly(w)
   w
 }) 
@@ -78,10 +83,33 @@ output$var_tasa<-renderPlotly({
   tasa_crecimiento_nacional$Fecha<-as.Date(tasa_crecimiento_nacional$Fecha)
   
   r<-ggplot(tasa_crecimiento_nacional,aes(Fecha,`Tasa de crecimiento /%`))+geom_line(color=Rojo)
-  r<-r+ggtitle("Tasa de crecimiento vs tiempo")
+  r<-r+scale_y_continuous(breaks=seq(0, 70, 5))
+  r<-r+scale_x_date(breaks="weeks")
+  r<-r+ggtitle("Tasa de crecimiento de casos confirmados acumulados vs tiempo")
+  r<-r+theme(axis.text.x = element_text(angle = 90))
   r<-ggplotly(r)
   r
 }) 
+
+output$todos<-renderPlotly({
+  
+  tasa_crecimiento_nacional<-read.csv("www/tasa_crecimiento_nacional.csv",check.names = FALSE)
+  tasa_crecimiento_nacional$Fecha<-as.Date(tasa_crecimiento_nacional$Fecha)
+  tasa_crecimiento_nacional_2<-select(tasa_crecimiento_nacional,`Fecha`,`Casos activos`,`Casos nuevos`,`Casos recuperados`,Fallecidos,`Casos totales`)
+  rm(tasa_crecimiento_nacional)
+
+  
+  tasa_crecimiento_nacional_2<-gather(tasa_crecimiento_nacional_2,key="Tipo de caso",value = "Casos",`Casos activos`,`Casos nuevos`,`Casos recuperados`,`Fallecidos`,`Casos totales`)
+  tasa_crecimiento_nacional_2$`Tipo de caso`<-as.factor(tasa_crecimiento_nacional_2$`Tipo de caso`)
+  z<-ggplot(tasa_crecimiento_nacional_2,aes(Fecha,Casos,col=`Tipo de caso`))+geom_point(size=1)
+  z<-z+scale_y_continuous(breaks=seq(0, 12000, 1000))
+  z<-z+scale_x_date(breaks="weeks")
+  z<-z+ggtitle("Casos vs tiempo")+ theme(legend.position="bottom")
+  z<-z+theme(axis.text.x = element_text(angle = 90))
+  z<-ggplotly(z)
+  z
+}) 
+
 
 
 
@@ -116,31 +144,7 @@ output$var_tasa<-renderPlotly({
             }) 
      
      
-     ###gráfico de contagiados a nivel nacional
-     
-     output$nacional<-renderPlotly({
-       
-       avance_contagiados_nacional<-read.csv("www/avance_todo_chile.csv",check.names = FALSE)
-       colnames(avance_contagiados_nacional)[which(names(avance_contagiados_nacional) == "Contagiados.cada.100000.habitantes")] <- "Contagiados cada 100000 habitantes"
-       avance_contagiados_nacional$Fecha<-as.Date(avance_contagiados_nacional$Fecha)
-       avance_contagiados_t<-avance_contagiados_nacional
-       
-       w<-ggplot(avance_contagiados_t,aes(Fecha,`Casos confirmados acumulados cada 100000 habitantes`))+geom_point(color=Verde_oscuro)
-       w<-w+ggtitle("Valor acumulado de casos confirmados por cada 100000 habitantes")
-       w<-ggplotly(w)
-       w
-     }) 
-
-     
-     output$var_tasa<-renderPlotly({
-       
-       tasa_crecimiento_nacional<-read.csv("www/tasa_crecimiento_nacional.csv",check.names = FALSE)
-       tasa_crecimiento_nacional$Fecha<-as.Date(tasa_crecimiento_nacional$Fecha)
-       r<-ggplot(tasa_crecimiento_nacional,aes(Fecha,`Tasa de crecimiento /%`))+geom_line(color=Rojo)
-       r<-r+ggtitle("Tasa de crecimiento vs tiempo")
-       r<-ggplotly(r)
-       r
-     }) 
+    
      
      
      
