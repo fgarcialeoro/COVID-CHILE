@@ -130,39 +130,3 @@ tasa<-left_join(tasa,tasa_rec)
 
 
 write.csv(tasa,"www/tasa_crecimiento_nacional.csv",row.names = FALSE)
-
-
-#####################SIR
-sir_equations <- function(time, variables, parameters) {
-  with(as.list(c(variables, parameters)), {
-    dS <- -beta * I * S
-    dI <-  beta * I * S - gamma * I
-    dR <-  gamma * I
-    return(list(c(dS, dI, dR)))
-  })
-}
-
-
-
-
-parameters_values <- c(
-  beta  = 0.02, # infectious contact rate (/person/day)
-  gamma = 0.08   # recovery rate (/day)
-)
-
-initial_values <- c(
-  S = 20000000,  # number of susceptibles at time = 0
-  I =   1,  # number of infectious at time = 0
-  R =   0   # number of recovered (and immune) at time = 0
-)
-
-time_values <- seq(0, 10)
-
-sir_values_1 <- ode(
-  y = initial_values,
-  times = time_values,
-  func = sir_equations,
-  parms = parameters_values 
-)
-
-sir_values_1

@@ -64,7 +64,7 @@ desarrollo$`Time to start a business`<-NULL
 desarrollo$`Tuberculosis case detection rate (%, all forms)`<-NULL
 desarrollo$`Surface area (sq. km)`<-NULL
 desarrollo$`Time required to start a business (days)`<-NULL
-desarrollo$
+
 
 colnames(desarrollo)[which(names(desarrollo) == "Control of Corruption: Estimate")] <- "Corruption control"
 colnames(desarrollo)[which(names(desarrollo) == "Political Stability and Absence of Violence/Terrorism: Estimate")] <- "Political Stability"

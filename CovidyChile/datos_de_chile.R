@@ -18,7 +18,7 @@ library(stringi)
 setwd("~/Dropbox/working directory R/COVID CHILE/CovidyChile")
 
 
-avance_contagiados_chile<-read.csv("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/Datos-COVID19/output/producto1/Covid-19.csv",check.names = FALSE,header = TRUE)
+
 
 
 avance_contagiados_chile<-read.xlsx("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/datos_minsal.xlsx",sheetName ="avance_contagiados_comuna")
@@ -52,7 +52,7 @@ write.csv(avance_contagiados_chile,"www/avance_contagiados_chile.csv",row.names 
 ##############################Mapas por comuna##################################################
 ################################################################################################
 
-divisiones_administrativas<- readOGR("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/CovidyChile/www/datos/DivisionPoliticoAdministrativa2019/DivisionPoliticaAdministrativa2019.shp", GDAL1_integer64_policy = TRUE)
+divisiones_administrativas<- readOGR("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/DivisionPoliticoAdministrativa2019/DivisionPoliticaAdministrativa2019.shp", GDAL1_integer64_policy = TRUE)
 divisiones <- spTransform(divisiones_administrativas, CRS("+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"))
 
 regiones<-unique(divisiones$REGION)
@@ -200,6 +200,137 @@ write.csv(tasa_crecimiento,"www/tasa_crecimiento.csv",row.names = FALSE)
 ##https://data-flair.training/blogs/r-nonlinear-regression/
 ##Asym+(R0-Asym)*exp(-exp(lrc)*input)
 ##apropos("^SS")
+####################################################################################################
+####################################################################################################
+####################################################################################################
+#####################XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX############################
+#####################XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX############################
+#####################XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX############################
+#####################XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX############################
+#####################XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX############################
+#####################XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX############################
+#####################XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX############################
+#####################XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX############################
+####################################################################################################
+####################################################################################################
+####################################################################################################
+####################################################################################################
+####################################################################################################
+####################################################################################################
+####################Lo mismo, pero con los datos de MIN_CyT
+avance_contagiados_chile<-read.csv("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/Datos-COVID19/output/producto1/Covid-19.csv",check.names = FALSE,header = TRUE)
+avance_contagiados_chile<-gather(avance_contagiados_chile,key="Fecha",value = "casos","2020-03-30":(ncol(avance_contagiados_chile)-1))
+avance_contagiados_chile[, ]<-lapply(avance_contagiados_chile[, ], as.character)
+avance_contagiados_chile$Poblacion<-as.numeric(avance_contagiados_chile$Poblacion)
+avance_contagiados_chile$casos<-as.numeric(avance_contagiados_chile$casos)
+avance_contagiados_chile$Fecha<-as.Date(avance_contagiados_chile$Fecha)
+avance_contagiados_chile$`Codigo comuna`<-as.numeric(avance_contagiados_chile$`Codigo comuna`)
+avance_contagiados_chile$`Codigo region`<-as.numeric(avance_contagiados_chile$`Codigo region`)
+################################################################################################
+##############################Mapas por comuna##################################################
+
+
+divisiones_administrativas<- readOGR("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/DivisionPoliticoAdministrativa2019/DivisionPoliticaAdministrativa2019.shp", GDAL1_integer64_policy = TRUE)
+divisiones <- spTransform(divisiones_administrativas, CRS("+proj=longlat +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +no_defs"))
+
+regiones<-as.character(unique(divisiones$CUT_REG))
+
+mapa<-subset(divisiones, divisiones$CUT_REG==regiones[1])
+mapa<-ms_simplify(mapa, keep = 0.001)
+
+for (i in c(2:10,13:16)){
+  print(i)
+  region_i<-subset(divisiones, divisiones$CUT_REG==regiones[i])
+  region_i<-ms_simplify(region_i, keep = 0.001)
+  mapa<-rbind(region_i,mapa)}
+
+region_11<-subset(divisiones, divisiones$CUT_REG==regiones[11])
+#region_11<-ms_simplify(region_11, keep = 0.001)
+region_12<-subset(divisiones, divisiones$CUT_REG==regiones[12])
+#region_12<-ms_simplify(region_12, keep = 0.001)
+
+
+mapa<-rbind(region_11,mapa)
+mapa<-rbind(region_12,mapa)
+
+mapa@data$CUT_COM<-as.numeric(as.character(mapa@data$CUT_COM))
+mapa@data$CUT_REG<-as.numeric(mapa@data$CUT_REG)
+#mapa@data$COMUNA<-gsub("Los Alamos","Los Álamos",mapa@data$COMUNA,fixed = TRUE)
+#mapa@data$COMUNA<-gsub("Los Angeles","Los Ángeles",mapa@data$COMUNA,fixed = TRUE)
+
+
+fechas<-unique(avance_contagiados_chile$Fecha)
+regiones<-unique(avance_contagiados_chile$`Codigo region`)
+
+for (i in (1:length(fechas))){
+  avance_contagiados_chile_i<-subset(avance_contagiados_chile, avance_contagiados_chile$Fecha==fechas[i])
+  j<-1
+  for (j in (1:length(regiones))){
+    avance_contagiados_chile_i_j<-subset(avance_contagiados_chile_i, avance_contagiados_chile_i$`Codigo region`==regiones[j])
+    mapa_j<-subset(mapa, mapa$CUT_REG==regiones[j])
+    mapa_i_j<-mapa_j
+    mapa_i_j@data<-left_join(mapa_j@data,avance_contagiados_chile_i_j,by=c("CUT_COM"="Codigo comuna"))
+    saveRDS(mapa_i_j,paste("www/mapas/mapa_chile",toupper(stri_trans_general(regiones[j], "Latin-ASCII")),fechas[i],sep="-"))
+  }
+}
+rm(mapa,mapa_i_j,region_11,region_12,region_i,mapa_j,avance_contagiados_chile_i,avance_contagiados_chile_i_j,divisiones,divisiones_administrativas)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
