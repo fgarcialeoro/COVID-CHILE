@@ -47,7 +47,7 @@ ui <- fluidPage(
                    mainPanel(verticalLayout(
                      plotlyOutput("comunas"),
                      div(strong("Estimación de la tasa de crecimiento de casos confirmados por comuna"),br(),"En la tabla a continuación se entrega una estimación 
-                  de la tasa de crecimiento del número de casos confirmados acumulados.  Esta tasa se evaluó a partir de un modelo exponencial aplicado por separado a cada Comuna, considerando que estamos en la etapa inicial de la propagación de los contagios. Para algunas comunas no se pudo ajustar el modelo.  Se incluye la incertidumbre expandida de la tasa de crecimiento, para un intervalode covertura de un 95%, esta está asociada a los errores aleatorios del modelo.  En muchas situaciones la incertidumbre
+                  de la tasa de crecimiento del número de casos confirmados acumulados.  Esta tasa se evaluó a partir de un modelo exponencial aplicado por separado a los últimos 4 días con datos de cada comuna. Para algunas comunas no se pudo ajustar el modelo.  Se incluye la incertidumbre expandida de la tasa de crecimiento, para un intervalode covertura de un 95%, esta está asociada a los errores aleatorios del modelo.  En muchas situaciones la incertidumbre
                       no se considera y se da por seguro el valor predicho por el modelo, (en este caso la tasa), cayendo en la trampa del promedio.  Esta trampa del promedio genera un riesgo de decisión,
                       que es un sesgo de decisión. La incertidumbre puede ser menor con otro modelo, pero siempre va a estar presente. Dado que a nivel de Comuna, son pocos los datos, las incertidumbres son grandes. Por otra parte, no se ha considerado la incertidumbre del muestreo, 
                       ni las características de sensibilidad ni precisión de los exámenes. Una tasa de crecimiento de 20% implica un incremento de 20% de casos por día",
@@ -65,7 +65,7 @@ ui <- fluidPage(
                                                   "Aysen del General Carlos Ibanez del Campo",
                                                    "Magallanes y de la Antartica Chilena")),selected=toupper(c("Metropolitana de Santiago"))),
                      #sliderInput("i_FECHA","Fecha",min=as.Date("2020-03-30"),max=as.Date("2020-04-20"),value=as.Date("2020-04-20"), ticks=FALSE),
-                     selectInput("i_FECHA","Fecha",choices=c("2020-03-30","2020-04-01","2020-04-03","2020-04-06","2020-04-08","2020-04-10","2020-04-15","2020-04-17","2020-04-20"),selected="2020-04-20"),
+                     selectInput("i_FECHA","Fecha",choices=c("2020-03-30","2020-04-01","2020-04-03","2020-04-06","2020-04-08","2020-04-10","2020-04-15","2020-04-17","2020-04-20","2020-04-24"),selected="2020-04-24"),
                      img(src ="logocsc.png", align = "center"),
                      uiOutput("tab1")
                      ),
