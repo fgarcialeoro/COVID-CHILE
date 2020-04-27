@@ -14,12 +14,12 @@ library(leaflet)
 library(sp)
 library(rmapshaper)
 library(stringi)
-library("deSolve")
 
 
 
+resumen_nacional<-function(){
 Poblacion<-19458310
-avance_todo_chile<-read.csv("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/Datos-COVID19/output/producto5/TotalesNacionales.csv",header=T,check.names=F)
+avance_todo_chile<-read.csv("https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto5/TotalesNacionales.csv",header=T,check.names=F)
 avance_todo_chile<-gather(avance_todo_chile,key="Tipo de dato",value = "casos","2020-03-03":ncol(avance_todo_chile))
 avance_todo_chile<-spread(avance_todo_chile,Fecha,casos)
 colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Tipo de dato")] <- "Fecha"
@@ -28,9 +28,9 @@ avance_todo_chile$Fecha<-as.Date(avance_todo_chile$Fecha)
 avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`<-as.numeric(avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`)
 
 
-plot(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,data=avance_todo_chile) 
-model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile)
-summary(model)[["coefficients"]]
+#plot(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,data=avance_todo_chile) 
+#model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile)
+#summary(model)[["coefficients"]]
 
 
 
@@ -127,6 +127,6 @@ tasa_rec$`u(tasa_rec de crecimiento)`<-NULL
 tasa_rec$`U(tasa_rec de crecimiento), 95%`<-NULL
 
 tasa<-left_join(tasa,tasa_rec)
+tasa
+}
 
-
-write.csv(tasa,"www/tasa_crecimiento_nacional.csv",row.names = FALSE)

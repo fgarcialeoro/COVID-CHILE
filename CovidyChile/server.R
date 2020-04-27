@@ -25,9 +25,9 @@ Azul_claro<-rgb(0,71,130, maxColorValue=255)
 Rojo<-rgb(143,19,14, maxColorValue=255)
 Verde_claro<-rgb(198,206,6,maxColorValue=255)
 
-
+source("resumen_nacional_con_MIN_C.R")
 server <- function(session,input, output) {
-  #source("grafico_burbujas_internacional.R")
+
  
 url <- a("www.commonsense.cl",href="https://www.commonsense.cl")
 output$tab <- renderUI({url})
@@ -79,7 +79,7 @@ output$nacional<-renderPlotly({
 
 output$var_tasa<-renderPlotly({
   
-  tasa_crecimiento_nacional<-read.csv("www/tasa_crecimiento_nacional.csv",check.names = FALSE)
+  tasa_crecimiento_nacional<-resumen_nacional()
   tasa_crecimiento_nacional$Fecha<-as.Date(tasa_crecimiento_nacional$Fecha)
   
   r<-ggplot(tasa_crecimiento_nacional,aes(Fecha,`Tasa de crecimiento /%`))+geom_line(color=Rojo)
@@ -91,9 +91,12 @@ output$var_tasa<-renderPlotly({
   r
 }) 
 
+
+
+
 output$todos<-renderPlotly({
   
-  tasa_crecimiento_nacional<-read.csv("www/tasa_crecimiento_nacional.csv",check.names = FALSE)
+  tasa_crecimiento_nacional<-resumen_nacional()
   tasa_crecimiento_nacional$Fecha<-as.Date(tasa_crecimiento_nacional$Fecha)
   tasa_crecimiento_nacional_2<-select(tasa_crecimiento_nacional,`Fecha`,`Casos activos`,`Casos nuevos`,`Casos recuperados`,Fallecidos,`Casos totales`)
   rm(tasa_crecimiento_nacional)
@@ -102,7 +105,7 @@ output$todos<-renderPlotly({
   tasa_crecimiento_nacional_2<-gather(tasa_crecimiento_nacional_2,key="Tipo de caso",value = "Casos",`Casos activos`,`Casos nuevos`,`Casos recuperados`,`Fallecidos`,`Casos totales`)
   tasa_crecimiento_nacional_2$`Tipo de caso`<-as.factor(tasa_crecimiento_nacional_2$`Tipo de caso`)
   z<-ggplot(tasa_crecimiento_nacional_2,aes(Fecha,Casos,col=`Tipo de caso`))+geom_point(size=1)
-  z<-z+scale_y_continuous(breaks=seq(0, 12000, 1000))
+  z<-z+scale_y_continuous(breaks=seq(0, 50000, 1000))
   z<-z+scale_x_date(breaks="weeks")
   z<-z+ggtitle("Casos vs tiempo")+ theme(legend.position="bottom")
   z<-z+theme(axis.text.x = element_text(angle = 90))
@@ -121,28 +124,50 @@ output$todos<-renderPlotly({
     
      output$comunas<-renderPlotly({
       
-      avance_contagiados_chile<-read.csv("www/avance_contagiados_chile.csv",check.names = FALSE,)
+      avance_contagiados_chile<-read.csv("www/actuales_acumulados.csv",check.names = FALSE,)
       
       avance_contagiados_t<-avance_contagiados_chile
       avance_contagiados_t$Fecha<-as.Date(as.character(avance_contagiados_t$Fecha))
-      avance_contagiados_t$REGION<-as.character(avance_contagiados_t$REGION)
-      avance_contagiados_t$COMUNA<-as.character(avance_contagiados_t$COMUNA)
-      avance_contagiados_t$Población<-as.numeric(as.character(avance_contagiados_t$Población))
-      avance_contagiados_t$Confirmados<-as.numeric(as.character(avance_contagiados_t$Confirmados))
-      avance_contagiados_t$Tasa.incidencia<-as.numeric(as.character(avance_contagiados_t$Tasa.incidencia))
-      avance_contagiados_t$`Contagiados cada 100000 habitantes`<-as.numeric(as.character(avance_contagiados_t$`Contagiados cada 100000 habitantes`))
-      avance_contagiados_t$"REGION-COMUNA"<-paste(avance_contagiados_t$REGION,avance_contagiados_t$COMUNA,sep="-")  
+      avance_contagiados_t$Region<-as.character(avance_contagiados_t$Region)
+      avance_contagiados_t$Comuna<-as.character(avance_contagiados_t$Comuna)
+      avance_contagiados_t$Poblacion<-as.numeric(as.character(avance_contagiados_t$Poblacion))
+      avance_contagiados_t$`Casos confirmados acumulados cada 100000 habitantes`<-as.numeric(as.character(avance_contagiados_t$`Casos confirmados acumulados cada 100000 habitantes`))
+      avance_contagiados_t$`Casos actuales cada 100000 habitantes`<-as.numeric(as.character(avance_contagiados_t$`Casos actuales cada 100000 habitantes`))
+      avance_contagiados_t$"Region-Comuna"<-paste(avance_contagiados_t$Region,avance_contagiados_t$Comuna,sep="-")  
+     
       
       if(input$i_ESCALAY =="Lineal"){escala<-scale_y_continuous()} else {escala<-scale_y_log10()}
       
 
-      m<-ggplot(filter(avance_contagiados_t,`REGION-COMUNA` %in% input$i_REGION_COMUNA) , aes(Fecha,`Contagiados cada 100000 habitantes`,color = `REGION-COMUNA`))+geom_point()
-
-      m<-m+ggtitle("Valor acumulado de casos confirmados")+escala
+      m<-ggplot(filter(avance_contagiados_t,`Region-Comuna` %in% input$i_REGION_COMUNA) , aes(Fecha,`Casos actuales cada 100000 habitantes`,color = `Region-Comuna`))+geom_point()
+      m<-m+ggtitle("Casos actuales")+escala
       m<-ggplotly(m)
       m
             }) 
      
+     
+     output$comunas_acum_actuales<-renderPlotly({
+       
+       acumulados_actuales<-read.csv("www/actuales_acumulados.csv",check.names = FALSE,)
+       
+       acumulados_actuales<-acumulados_actuales
+       acumulados_actuales$Fecha<-as.Date(as.character(acumulados_actuales$Fecha))
+       acumulados_actuales$Region<-as.character(acumulados_actuales$Region)
+       acumulados_actuales$Comuna<-as.character(acumulados_actuales$Comuna)
+       acumulados_actuales$Poblacion<-as.numeric(as.character(acumulados_actuales$Poblacion))
+       acumulados_actuales$`Casos confirmados acumulados cada 100000 habitantes`<-as.numeric(as.character(acumulados_actuales$`Casos confirmados acumulados cada 100000 habitantes`))
+       acumulados_actuales$`Casos actuales cada 100000 habitantes`<-as.numeric(as.character(acumulados_actuales$`Casos actuales cada 100000 habitantes`))
+       acumulados_actuales$"Region-Comuna"<-paste(acumulados_actuales$Region,acumulados_actuales$Comuna,sep="-")  
+       acumulados_actuales<-gather(acumulados_actuales,`Casos confirmados acumulados cada 100000 habitantes`,`Casos actuales cada 100000 habitantes`,key="Tipo",value="Casos")
+       
+     if(input$i_ESCALAY_2 =="Lineal"){escala<-scale_y_continuous()} else {escala<-scale_y_log10()}
+       
+       
+       mk<-ggplot(filter(acumulados_actuales,`Region-Comuna` == input$i_REGION_COMUNA_2) , aes(Fecha,Casos,color = Tipo))+geom_point()
+       mk<-mk+ggtitle(paste("Casos actuales y acumulados en ",input$i_REGION_COMUNA_2))+escala
+       mk<-ggplotly(mk)
+       mk
+     }) 
      
     
      

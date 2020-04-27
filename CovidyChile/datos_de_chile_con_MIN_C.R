@@ -17,8 +17,8 @@ library(stringi)
 
 setwd("~/Dropbox/working directory R/COVID CHILE/CovidyChile")
 
-Poblacion<-19458310
-avance_contagiados_chile<-read.csv("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/Datos-COVID19/output/producto1/Covid-19.csv",check.names = FALSE,header = TRUE)
+#Poblacion<-19458310
+avance_contagiados_chile<-read.csv("https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto1/Covid-19.csv",check.names = FALSE,header = TRUE)
 avance_contagiados_chile<-gather(avance_contagiados_chile,key="Fecha",value = "casos","2020-03-30":(ncol(avance_contagiados_chile)-1))
 avance_contagiados_chile[, ]<-lapply(avance_contagiados_chile[, ], as.character)
 avance_contagiados_chile$Poblacion<-as.numeric(avance_contagiados_chile$Poblacion)
@@ -26,7 +26,29 @@ avance_contagiados_chile$casos<-as.numeric(avance_contagiados_chile$casos)
 avance_contagiados_chile$Fecha<-as.Date(avance_contagiados_chile$Fecha)
 avance_contagiados_chile$`Codigo comuna`<-as.numeric(avance_contagiados_chile$`Codigo comuna`)
 avance_contagiados_chile$`Codigo region`<-as.numeric(avance_contagiados_chile$`Codigo region`)
-avance_contagiados_chile$"Casos confirmados acumulados cada 100000 habitantes"<-(avance_contagiados_chile$casos/Poblacion)*100000
+avance_contagiados_chile$Poblacion<-as.numeric(avance_contagiados_chile$Poblacion)
+colnames(avance_contagiados_chile)[which(names(avance_contagiados_chile) == "casos")] <- "Casos confirmados acumulados"
+avance_contagiados_chile$"Casos confirmados acumulados cada 100000 habitantes"<-(avance_contagiados_chile$`Casos confirmados acumulados`/avance_contagiados_chile$Poblacion)*100000
+
+
+################################################################################################################################
+############################Casos activos por comuna
+casos_actuales<-read.csv("https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto25/CasosActualesPorComuna.csv",header=T,check.names=F)
+casos_actuales<-filter(casos_actuales,Comuna!="Total")
+casos_actuales<-gather(casos_actuales,key="Fecha",value = "Casos actuales","2020-04-13":(ncol(casos_actuales)))
+casos_actuales[, ]<-lapply(casos_actuales[, ],as.character)
+casos_actuales$Poblacion<-as.numeric(casos_actuales$Poblacion)
+casos_actuales$`Casos actuales`<-as.numeric(casos_actuales$`Casos actuales`)
+casos_actuales$Fecha<-as.Date(casos_actuales$Fecha)
+casos_actuales$`Codigo comuna`<-as.numeric(casos_actuales$`Codigo comuna`)
+casos_actuales$`Codigo region`<-as.numeric(casos_actuales$`Codigo region`)
+casos_actuales$"Casos actuales cada 100000 habitantes"<-(casos_actuales$`Casos actuales`/casos_actuales$Poblacion)*100000
+
+
+actuales_acumulados<-left_join(avance_contagiados_chile,casos_actuales)
+write.csv(actuales_acumulados,"www/actuales_acumulados.csv",row.names = FALSE)
+
+
 
 ################################################################################################################################
 ######################################ajuste de datos para estimar tasa de crecimiento por comuna###############################
@@ -91,7 +113,7 @@ print(i)
 rm(comuna_i,estimacion_i)
 
 
-tasa_crecimiento<-select(avance_contagiados_chile,Fecha,Region,`Codigo region`, Comuna,`Codigo comuna`,Poblacion,casos,`Casos confirmados acumulados cada 100000 habitantes`)
+tasa_crecimiento<-select(avance_contagiados_chile,Fecha,Region,`Codigo region`, Comuna,`Codigo comuna`,Poblacion,`Casos confirmados acumulados`,`Casos confirmados acumulados cada 100000 habitantes`)
 tasa_crecimiento<-na.omit(left_join(estimacion,tasa_crecimiento))
 
 tasa_crecimiento$Intercepto<-NULL
@@ -103,16 +125,17 @@ tasa_crecimiento$factor_t<-NULL
 tasa_crecimiento$`U(Tasa de crecimiento), 95%`<-NULL
 tasa_crecimiento$`Tasa de crecimiento`<-NULL
 
-tasa_crecimiento<-select(tasa_crecimiento,Region,Comuna,Poblacion,casos,`Casos confirmados acumulados cada 100000 habitantes`,`Tasa de crecimiento/%`,`U(Tasa de crecimiento)/%, 95%`)
-tasa_crecimiento$`Casos confirmados acumulados cada 100000 habitantes`<-round(tasa_crecimiento$`Casos confirmados acumulados cada 100000 habitantes`,1)
-tasa_crecimiento$`Tasa de crecimiento/%`<-round(tasa_crecimiento$`Tasa de crecimiento/%`,1)
-tasa_crecimiento$`U(Tasa de crecimiento)/%, 95%`<- round(tasa_crecimiento$`U(Tasa de crecimiento)/%, 95%`,1)
-tasa_crecimiento<-filter(tasa_crecimiento,`Tasa de crecimiento/%`>0)
+tasa_crecimiento<-select(tasa_crecimiento,Region,Comuna,Poblacion,`Casos confirmados acumulados`,`Casos confirmados acumulados cada 100000 habitantes`,`Tasa de crecimiento/%`,`U(Tasa de crecimiento)/%, 95%`)
+tasa_crecimiento$`Casos confirmados acumulados cada 100000 habitantes`<-round(tasa_crecimiento$`Casos confirmados acumulados cada 100000 habitantes`,2)
+tasa_crecimiento$`Tasa de crecimiento/%`<-round(tasa_crecimiento$`Tasa de crecimiento/%`,2)
+tasa_crecimiento$`U(Tasa de crecimiento)/%, 95%`<- round(tasa_crecimiento$`U(Tasa de crecimiento)/%, 95%`,2)
+#tasa_crecimiento<-filter(tasa_crecimiento,`Tasa de crecimiento/%`>0)
 tasa_crecimiento<-unique(tasa_crecimiento)
 tasa_crecimiento<-arrange(tasa_crecimiento, desc(`Tasa de crecimiento/%`))
 
 
-colnames(tasa_crecimiento)[which(names(tasa_crecimiento) == "casos")] <- "Casos confirmados acumulados"
+
+
 write.csv(tasa_crecimiento,"www/tasa_crecimiento.csv",row.names = FALSE)
 
 
