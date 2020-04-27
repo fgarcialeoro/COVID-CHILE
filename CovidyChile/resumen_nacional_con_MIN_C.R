@@ -23,14 +23,9 @@ avance_todo_chile<-read.csv("https://raw.githubusercontent.com/MinCiencia/Datos-
 avance_todo_chile<-gather(avance_todo_chile,key="Tipo de dato",value = "casos","2020-03-03":ncol(avance_todo_chile))
 avance_todo_chile<-spread(avance_todo_chile,Fecha,casos)
 colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Tipo de dato")] <- "Fecha"
-avance_todo_chile$"Casos confirmados acumulados cada 100000 habitantes"<-100000*avance_todo_chile$`Casos totales`/Poblacion
+avance_todo_chile$"Casos totales cada 100000 habitantes"<-100000*avance_todo_chile$`Casos totales`/Poblacion
 avance_todo_chile$Fecha<-as.Date(avance_todo_chile$Fecha)
-avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`<-as.numeric(avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`)
-
-
-#plot(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,data=avance_todo_chile) 
-#model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile)
-#summary(model)[["coefficients"]]
+avance_todo_chile$`Casos totales cada 100000 habitantes`<-as.numeric(avance_todo_chile$`Casos totales cada 100000 habitantes`)
 
 
 
@@ -42,7 +37,7 @@ for (i in 3:length(dias)){
   
   if(i<=10){
     avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i])
-    model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+    model<-lm(log(`Casos totales cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
     summary(model)
     tasa_i$Fecha<-dias[i]
     tasa_i<-as.data.frame(tasa_i)
@@ -54,7 +49,7 @@ for (i in 3:length(dias)){
     tasa<-rbind(tasa_i,tasa)
   }else{
     avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
-    model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+    model<-lm(log(`Casos totales cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
     summary(model)
     tasa_i$Fecha<-dias[i]
     tasa_i<-as.data.frame(tasa_i)
@@ -127,6 +122,13 @@ tasa_rec$`u(tasa_rec de crecimiento)`<-NULL
 tasa_rec$`U(tasa_rec de crecimiento), 95%`<-NULL
 
 tasa<-left_join(tasa,tasa_rec)
+
+tasa$"Casos activos cada 100000 habitantes"<-100000*tasa$`Casos activos`/Poblacion
+tasa$"Casos nuevos cada 100000 habitantes"<-100000*tasa$`Casos nuevos`/Poblacion
+tasa$"Casos recuperados cada 100000 habitantes"<-100000*tasa$`Casos recuperados`/Poblacion
+tasa$"Casos fallecidos cada 100000 habitantes"<-100000*tasa$Fallecidos/Poblacion
+
+
 tasa
 }
 

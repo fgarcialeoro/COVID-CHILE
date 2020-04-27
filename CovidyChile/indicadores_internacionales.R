@@ -8,11 +8,11 @@ library(lubridate)
 library(googleVis)
 
 
-
+indicadores_internacionales<-function(){
 avance_muertes<-read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv",header=T,check.names=F)
 avance_infectados<-read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv",header=T,check.names=F)
-desarrollo<-read.csv("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/0c406493-1104-4e2f-8265-443e3c37e2d9_Data.csv", header=T,check.names=F)
-gobernanza<-read.csv("/Users/franciscogarcia/Dropbox/working\ directory\ R/COVID\ CHILE/datos/WB\ Gobernanza/5aabee40-8a3c-4911-97d4-c0c9c8446188_Data.csv", header=T,check.names=F)
+desarrollo<-read.csv("www/0c406493-1104-4e2f-8265-443e3c37e2d9_Data.csv", header=T,check.names=F)
+gobernanza<-read.csv("www/WB\ Gobernanza/5aabee40-8a3c-4911-97d4-c0c9c8446188_Data.csv", header=T,check.names=F)
 
 
 gobernanza<-mutate_all(gobernanza,as.character)
@@ -110,7 +110,8 @@ avance_2<-na.omit(avance_2)
 avance_2<-left_join(avance_2,gobernanza)
 avance_2<-na.omit(avance_2)
 avance_2$`Country Code`<-NULL
+avance_2
+}
 
 
 
-write.csv(avance_2,"www/datos_paises.csv",row.names = FALSE)
