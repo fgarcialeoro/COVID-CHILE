@@ -13,7 +13,6 @@ source("casos_actuales_comuna_con_MIN_C.R")
 
 mapa_actuales<-function(fecha,region){
   
-  
 casos_actuales_comuna<-casos_actuales_comuna()
 casos_actuales_fecha_region<-filter(casos_actuales_comuna, Fecha==fecha & Region==Region)
 codigo_de_region<-unique(filter(select(casos_actuales_fecha_region,Region,`Codigo region`),Region==region))[1,2]

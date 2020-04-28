@@ -57,7 +57,7 @@ output$comunas_cada_100_mil<-renderPlotly({
   
   
   m<-ggplot(filter(casos_actuales_comuna,`Region-Comuna` %in% input$i_REGION_COMUNA) , aes(Fecha,`Casos actuales cada 100000 habitantes`,color = `Region-Comuna`))+geom_point()
-  m<-m+ggtitle("Casos actuales cada 100000 habitantes")+escala
+  m<-m+ggtitle("Histórico casos actuales cada 100000 habitantes")+escala
   m<-ggplotly(m)
   m
 }) 
@@ -72,16 +72,26 @@ output$comunas_absoluto<-renderPlotly({
   
   
   m<-ggplot(filter(casos_actuales_comuna,`Region-Comuna` %in% input$i_REGION_COMUNA) , aes(Fecha,`Casos actuales`,color = `Region-Comuna`))+geom_point()
-  m<-m+ggtitle("Casos actuales")+escala
+  m<-m+ggtitle("Histórico casos actuales")+escala
   m<-ggplotly(m)
   m
 }) 
 
+#output$barras_actuales<-renderPlot({
+#  
+# casos_actuales_comuna<-casos_actuales_comuna()
+# casos_actuales_comuna$"Region-Comuna"<-paste(casos_actuales_comuna$Region,casos_actuales_comuna$Comuna,sep="-")  
+#   m<-ggplot(filter(casos_actuales_comuna,Fecha==max(casos_actuales_comuna$Fecha)), aes(x = reorder(`Region-Comuna`,-`Casos actuales`),`Casos actuales`))+geom_col()+facet_wrap(~Region)
+# m<-m+theme(axis.text.x = element_text(angle = 90, hjust = 1,size=1))
+#   m<-m+ggtitle("Casos actuales por comuna")
+# m<-ggplotly(m)
+# m
+#}) 
+
+
+
 
 output$crecimiento<-renderDataTable({DT::datatable(tasa_crecimiento())})
-
-
-##########tabPanel("Casos actuales y mapas", 
 
 
 

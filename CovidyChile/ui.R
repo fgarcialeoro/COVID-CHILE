@@ -46,7 +46,7 @@ ui <- fluidPage(
                    
                    
                    mainPanel(verticalLayout(
-                     plotlyOutput("comunas_cada_100_mil"),br(),plotlyOutput("comunas_absoluto"),br(),
+                     plotlyOutput("comunas_cada_100_mil"),br(),plotlyOutput("comunas_absoluto"),br(),br(),
                      div(strong("Estimación de la tasa de crecimiento de casos confirmados por comuna"),br(),"En la tabla a continuación se entrega una estimación 
                   de la tasa de crecimiento del número de casos confirmados acumulados.  Esta tasa se evaluó a partir de un modelo exponencial aplicado por separado a los últimos 4 días con datos de cada comuna. Para algunas comunas no se pudo ajustar el modelo.  Se incluye la incertidumbre expandida de la tasa de crecimiento, para un intervalode covertura de un 95%, esta está asociada a los errores aleatorios del modelo.  En muchas situaciones la incertidumbre
                       no se considera y se da por seguro el valor predicho por el modelo, (en este caso la tasa), cayendo en la trampa del promedio.  Esta trampa del promedio genera un riesgo de decisión,
@@ -55,29 +55,8 @@ ui <- fluidPage(
                      dataTableOutput("crecimiento"))))
                    )),
         
-        tabPanel("Casos actuales y mapas", 
-                 sidebarLayout(
-                   sidebarPanel(
-                     selectInput("i_REGION_actuales", "Región",choices=casos_actuales_comuna,selected=c("Metropolitana")),
-                     selectInput("i_FECHA_actuales", "Fecha",choices=fechas_actuales,selected=c("Metropolitana")),
-                     
-                     div("Los datos son obtenidos del repositorio", a("GitHub", href="https://github.com/MinCiencia/Datos-COVID19"),
-                         "del Ministerio de Ciencia y Tecnología"),br(),br(),br(),br(),
-                     
-                     img(src ="logocsc.png", align = "center"),
-                     uiOutput("tab")
-                   ),
-                   
-                   
-                   mainPanel(verticalLayout(
-                     plotlyOutput("comunas_cada_100_mil"),br(),plotlyOutput("comunas_absoluto"),br(),
-                     div(strong("Estimación de la tasa de crecimiento de casos confirmados por comuna"),br(),"En la tabla a continuación se entrega una estimación 
-                  de la tasa de crecimiento del número de casos confirmados acumulados.  Esta tasa se evaluó a partir de un modelo exponencial aplicado por separado a los últimos 4 días con datos de cada comuna. Para algunas comunas no se pudo ajustar el modelo.  Se incluye la incertidumbre expandida de la tasa de crecimiento, para un intervalode covertura de un 95%, esta está asociada a los errores aleatorios del modelo.  En muchas situaciones la incertidumbre
-                      no se considera y se da por seguro el valor predicho por el modelo, (en este caso la tasa), cayendo en la trampa del promedio.  Esta trampa del promedio genera un riesgo de decisión,
-                      que es un sesgo de decisión. La incertidumbre puede ser menor con otro modelo, pero siempre va a estar presente. Dado que a nivel de Comuna, son pocos los datos, las incertidumbres son grandes. Por otra parte, no se ha considerado la incertidumbre del muestreo, 
-                      ni las características de sensibilidad ni precisión de los exámenes. Una tasa de crecimiento de 20% implica un incremento de 20% de casos por día",
-                         dataTableOutput("crecimiento"))))
-                 )),
+
+
         
         tabPanel("Resumen nacional",
                  sidebarLayout(
