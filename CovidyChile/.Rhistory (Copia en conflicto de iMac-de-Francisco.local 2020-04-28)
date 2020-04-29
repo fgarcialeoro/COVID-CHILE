@@ -1,0 +1,512 @@
+avance_contagiados_nacional<-read.csv("www/tasa_crecimiento_nacional.csv",check.names = FALSE)
+View(avance_contagiados_nacional)
+avance_contagiados_nacional<-read.csv("www/avance_contagiados_chile.csv",check.names = FALSE)
+avance_contagiados_nacional$Fecha<-as.Date(avance_contagiados_nacional$Fecha)
+avance_contagiados_t<-avance_contagiados_nacional
+w<-ggplot(avance_contagiados_t,aes(Fecha,`Casos confirmados acumulados cada 100000 habitantes`))+geom_point(color=Verde_oscuro)
+w<-w+ggtitle("Valor acumulado de casos confirmados por cada 100000 habitantes")
+runApp()
+avance_contagiados_nacional<-read.csv("www/avance_contagiados_chile.csv",check.names = FALSE)
+avance_contagiados_nacional$Fecha<-as.Date(avance_contagiados_nacional$Fecha)
+avance_contagiados_t<-avance_contagiados_nacional
+w<-ggplot(avance_contagiados_t,aes(Fecha,`Casos confirmados acumulados cada 100000 habitantes`))+geom_point(color=Verde_oscuro)
+w<-w+ggtitle("Valor acumulado de casos confirmados por cada 100000 habitantes")
+Verde_oscuro<-rgb(73,79,14,maxColorValue=255)
+Azul_claro<-rgb(0,71,130, maxColorValue=255)
+Rojo<-rgb(143,19,14, maxColorValue=255)
+Verde_claro<-rgb(198,206,6,maxColorValue=255)
+avance_contagiados_nacional<-read.csv("www/avance_contagiados_chile.csv",check.names = FALSE)
+avance_contagiados_nacional$Fecha<-as.Date(avance_contagiados_nacional$Fecha)
+avance_contagiados_t<-avance_contagiados_nacional
+w<-ggplot(avance_contagiados_t,aes(Fecha,`Casos confirmados acumulados cada 100000 habitantes`))+geom_point(color=Verde_oscuro)
+w<-w+ggtitle("Valor acumulado de casos confirmados por cada 100000 habitantes")
+w<-w+ylab("Valor acumulado de casos confirmados \n  por cada 100000 habitantes")
+w<-w+scale_x_date(breaks="weeks")
+w<-w+theme(axis.text.x = element_text(angle = 90))+theme(axis.title.y = element_text(size = 9))
+w<-ggplotly(w)
+w
+library(plotly)
+library(xlsxjars)
+library(xlsx)
+library(dplyr)
+library(tidyr)
+library(corrplot)
+library(ggplot2)
+library(lubridate)
+library(googleVis)
+library(shiny)
+library(rgdal)
+library(leaflet)
+library(sp)
+library(sf)
+library(shinyWidgets)
+library(rmapshaper)
+library(stringr)
+library(stringi)
+library(GGally)
+library(DT)
+library(scales)
+y(scales)
+Verde_oscuro<-rgb(73,79,14,maxColorValue=255)
+Azul_claro<-rgb(0,71,130, maxColorValue=255)
+Rojo<-rgb(143,19,14, maxColorValue=255)
+Verde_claro<-rgb(198,206,6,maxColorValue=255)
+avance_contagiados_nacional<-read.csv("www/avance_contagiados_chile.csv",check.names = FALSE)
+avance_contagiados_nacional$Fecha<-as.Date(avance_contagiados_nacional$Fecha)
+avance_contagiados_t<-avance_contagiados_nacional
+w<-ggplot(avance_contagiados_t,aes(Fecha,`Casos confirmados acumulados cada 100000 habitantes`))+geom_point(color=Verde_oscuro)
+w<-w+ggtitle("Valor acumulado de casos confirmados por cada 100000 habitantes")
+w<-w+ylab("Valor acumulado de casos confirmados \n  por cada 100000 habitantes")
+w<-w+scale_x_date(breaks="weeks")
+w<-w+theme(axis.text.x = element_text(angle = 90))+theme(axis.title.y = element_text(size = 9))
+w<-ggplotly(w)
+w
+View(avance_contagiados_t)
+library(xlsxjars)
+library(xlsx)
+library(dplyr)
+library(tidyr)
+library(corrplot)
+library(ggplot2)
+library(lubridate)
+library(googleVis)
+library(chilemapas)
+library(scales)
+library(plotly)
+library(rgdal)
+library(leaflet)
+library(sp)
+library(rmapshaper)
+library(stringi)
+library("deSolve")
+Poblacion<-19458310
+avance_todo_chile<-read.csv("https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto5/TotalesNacionales.csv",header=T,check.names=F)
+avance_todo_chile<-gather(avance_todo_chile,key="Tipo de dato",value = "casos","2020-03-03":ncol(avance_todo_chile))
+avance_todo_chile<-spread(avance_todo_chile,Fecha,casos)
+colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Tipo de dato")] <- "Fecha"
+avance_todo_chile$"Casos confirmados acumulados cada 100000 habitantes"<-100000*avance_todo_chile$`Casos totales`/Poblacion
+avance_todo_chile$Fecha<-as.Date(avance_todo_chile$Fecha)
+avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`<-as.numeric(avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`)
+plot(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,data=avance_todo_chile)
+model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile)
+summary(model)[["coefficients"]]
+tasa<-c()
+tasa_i<-c()
+dias<-avance_todo_chile$Fecha
+for (i in 3:length(dias)){
+if(i<=10){
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i])
+model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_i$Fecha<-dias[i]
+tasa_i<-as.data.frame(tasa_i)
+tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_i$n<-nrow(avance_todo_chile_i)
+tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
+tasa<-rbind(tasa_i,tasa)
+}else{
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
+model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_i$Fecha<-dias[i]
+tasa_i<-as.data.frame(tasa_i)
+tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_i$n<-nrow(avance_todo_chile_i)
+tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
+tasa<-rbind(tasa_i,tasa)
+}
+}
+tasa$`Tasa de crecimiento /%`<-tasa$`Tasa de crecimiento`*100
+tasa$`U(Tasa de crecimiento)/%, 95%`<-tasa$`U(Tasa de crecimiento), 95%`*100
+tasa$`Tasa de crecimiento`<-NULL
+tasa$`u(Tasa de crecimiento)`<-NULL
+tasa$`U(Tasa de crecimiento), 95%`<-NULL
+tasa<-left_join(tasa,avance_todo_chile)
+tasa_rec<-c()
+tasa_rec_i<-c()
+dias<-avance_todo_chile$Fecha
+for (i in 17:length(dias)){
+if(i<=25){
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>dias[14])
+model<-lm(log(`Casos recuperados`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_rec_i$Fecha<-dias[i]
+tasa_rec_i<-as.data.frame(tasa_rec_i)
+tasa_rec_i$"tasa_rec de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_rec_i$"u(tasa_rec de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_rec_i$n<-nrow(avance_todo_chile_i)
+tasa_rec_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_rec_i$"U(tasa_rec de crecimiento), 95%"<-(tasa_rec_i$"u(tasa_rec de crecimiento)"/sqrt(tasa_rec_i$n))*tasa_rec_i$t
+tasa_rec<-rbind(tasa_rec_i,tasa_rec)
+}else{
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
+model<-lm(log(`Casos recuperados`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_rec_i$Fecha<-dias[i]
+tasa_rec_i<-as.data.frame(tasa_rec_i)
+tasa_rec_i$"tasa_rec de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_rec_i$"u(tasa_rec de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_rec_i$n<-nrow(avance_todo_chile_i)
+tasa_rec_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_rec_i$"U(tasa_rec de crecimiento), 95%"<-(tasa_rec_i$"u(tasa_rec de crecimiento)"/sqrt(tasa_rec_i$n))*tasa_rec_i$t
+tasa_rec<-rbind(tasa_rec_i,tasa_rec)
+print(i)
+}
+}
+tasa_rec$`tasa_rec de crecimiento /%`<-tasa_rec$`tasa_rec de crecimiento`*100
+tasa_rec$`U(tasa_rec de crecimiento)/%, 95%`<-tasa_rec$`U(tasa_rec de crecimiento), 95%`*100
+tasa_rec$`tasa_rec de crecimiento`<-NULL
+tasa_rec$`u(tasa_rec de crecimiento)`<-NULL
+tasa_rec$`U(tasa_rec de crecimiento), 95%`<-NULL
+tasa<-left_join(tasa,tasa_rec)
+write.csv(tasa,"www/tasa_crecimiento_nacional.csv",row.names = FALSE)
+library(xlsxjars)
+library(xlsx)
+library(dplyr)
+library(tidyr)
+library(corrplot)
+library(ggplot2)
+library(lubridate)
+library(googleVis)
+library(chilemapas)
+library(scales)
+library(plotly)
+library(rgdal)
+library(leaflet)
+library(sp)
+library(rmapshaper)
+library(stringi)
+library("deSolve")
+Poblacion<-19458310
+avance_todo_chile<-read.csv("https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto5/TotalesNacionales.csv",header=T,check.names=F)
+avance_todo_chile<-gather(avance_todo_chile,key="Tipo de dato",value = "casos","2020-03-03":ncol(avance_todo_chile))
+avance_todo_chile<-spread(avance_todo_chile,Fecha,casos)
+colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Tipo de dato")] <- "Fecha"
+avance_todo_chile$"Casos confirmados acumulados cada 100000 habitantes"<-100000*avance_todo_chile$`Casos totales`/Poblacion
+avance_todo_chile$Fecha<-as.Date(avance_todo_chile$Fecha)
+avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`<-as.numeric(avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`)
+plot(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,data=avance_todo_chile)
+model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile)
+summary(model)[["coefficients"]]
+tasa<-c()
+tasa_i<-c()
+dias<-avance_todo_chile$Fecha
+for (i in 3:length(dias)){
+if(i<=10){
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i])
+model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_i$Fecha<-dias[i]
+tasa_i<-as.data.frame(tasa_i)
+tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_i$n<-nrow(avance_todo_chile_i)
+tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
+tasa<-rbind(tasa_i,tasa)
+}else{
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
+model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_i$Fecha<-dias[i]
+tasa_i<-as.data.frame(tasa_i)
+tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_i$n<-nrow(avance_todo_chile_i)
+tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
+tasa<-rbind(tasa_i,tasa)
+}
+}
+tasa$`Tasa de crecimiento /%`<-tasa$`Tasa de crecimiento`*100
+tasa$`U(Tasa de crecimiento)/%, 95%`<-tasa$`U(Tasa de crecimiento), 95%`*100
+tasa$`Tasa de crecimiento`<-NULL
+tasa$`u(Tasa de crecimiento)`<-NULL
+tasa$`U(Tasa de crecimiento), 95%`<-NULL
+tasa<-left_join(tasa,avance_todo_chile)
+tasa_rec<-c()
+tasa_rec_i<-c()
+dias<-avance_todo_chile$Fecha
+for (i in 17:length(dias)){
+if(i<=25){
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>dias[14])
+model<-lm(log(`Casos recuperados`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_rec_i$Fecha<-dias[i]
+tasa_rec_i<-as.data.frame(tasa_rec_i)
+tasa_rec_i$"tasa_rec de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_rec_i$"u(tasa_rec de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_rec_i$n<-nrow(avance_todo_chile_i)
+tasa_rec_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_rec_i$"U(tasa_rec de crecimiento), 95%"<-(tasa_rec_i$"u(tasa_rec de crecimiento)"/sqrt(tasa_rec_i$n))*tasa_rec_i$t
+tasa_rec<-rbind(tasa_rec_i,tasa_rec)
+}else{
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
+model<-lm(log(`Casos recuperados`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_rec_i$Fecha<-dias[i]
+tasa_rec_i<-as.data.frame(tasa_rec_i)
+tasa_rec_i$"tasa_rec de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_rec_i$"u(tasa_rec de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_rec_i$n<-nrow(avance_todo_chile_i)
+tasa_rec_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_rec_i$"U(tasa_rec de crecimiento), 95%"<-(tasa_rec_i$"u(tasa_rec de crecimiento)"/sqrt(tasa_rec_i$n))*tasa_rec_i$t
+tasa_rec<-rbind(tasa_rec_i,tasa_rec)
+print(i)
+}
+}
+tasa_rec$`tasa_rec de crecimiento /%`<-tasa_rec$`tasa_rec de crecimiento`*100
+tasa_rec$`U(tasa_rec de crecimiento)/%, 95%`<-tasa_rec$`U(tasa_rec de crecimiento), 95%`*100
+tasa_rec$`tasa_rec de crecimiento`<-NULL
+tasa_rec$`u(tasa_rec de crecimiento)`<-NULL
+tasa_rec$`U(tasa_rec de crecimiento), 95%`<-NULL
+tasa<-left_join(tasa,tasa_rec)
+write.csv(tasa,"www/tasa_crecimiento_nacional.csv",row.names = FALSE)
+runApp()
+resumen_nacional<-function(){
+Poblacion<-19458310
+avance_todo_chile<-read.csv("https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto5/TotalesNacionales.csv",header=T,check.names=F)
+avance_todo_chile<-gather(avance_todo_chile,key="Tipo de dato",value = "casos","2020-03-03":ncol(avance_todo_chile))
+avance_todo_chile<-spread(avance_todo_chile,Fecha,casos)
+colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Tipo de dato")] <- "Fecha"
+avance_todo_chile$"Casos confirmados acumulados cada 100000 habitantes"<-100000*avance_todo_chile$`Casos totales`/Poblacion
+avance_todo_chile$Fecha<-as.Date(avance_todo_chile$Fecha)
+avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`<-as.numeric(avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`)
+#plot(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,data=avance_todo_chile)
+#model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile)
+#summary(model)[["coefficients"]]
+tasa<-c()
+tasa_i<-c()
+dias<-avance_todo_chile$Fecha
+for (i in 3:length(dias)){
+if(i<=10){
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i])
+model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_i$Fecha<-dias[i]
+tasa_i<-as.data.frame(tasa_i)
+tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_i$n<-nrow(avance_todo_chile_i)
+tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
+tasa<-rbind(tasa_i,tasa)
+}else{
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
+model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_i$Fecha<-dias[i]
+tasa_i<-as.data.frame(tasa_i)
+tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_i$n<-nrow(avance_todo_chile_i)
+tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
+tasa<-rbind(tasa_i,tasa)
+}
+}
+tasa$`Tasa de crecimiento /%`<-tasa$`Tasa de crecimiento`*100
+tasa$`U(Tasa de crecimiento)/%, 95%`<-tasa$`U(Tasa de crecimiento), 95%`*100
+tasa$`Tasa de crecimiento`<-NULL
+tasa$`u(Tasa de crecimiento)`<-NULL
+tasa$`U(Tasa de crecimiento), 95%`<-NULL
+tasa<-left_join(tasa,avance_todo_chile)
+tasa_rec<-c()
+tasa_rec_i<-c()
+dias<-avance_todo_chile$Fecha
+for (i in 17:length(dias)){
+if(i<=25){
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>dias[14])
+model<-lm(log(`Casos recuperados`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_rec_i$Fecha<-dias[i]
+tasa_rec_i<-as.data.frame(tasa_rec_i)
+tasa_rec_i$"tasa_rec de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_rec_i$"u(tasa_rec de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_rec_i$n<-nrow(avance_todo_chile_i)
+tasa_rec_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_rec_i$"U(tasa_rec de crecimiento), 95%"<-(tasa_rec_i$"u(tasa_rec de crecimiento)"/sqrt(tasa_rec_i$n))*tasa_rec_i$t
+tasa_rec<-rbind(tasa_rec_i,tasa_rec)
+}else{
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
+model<-lm(log(`Casos recuperados`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_rec_i$Fecha<-dias[i]
+tasa_rec_i<-as.data.frame(tasa_rec_i)
+tasa_rec_i$"tasa_rec de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_rec_i$"u(tasa_rec de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_rec_i$n<-nrow(avance_todo_chile_i)
+tasa_rec_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_rec_i$"U(tasa_rec de crecimiento), 95%"<-(tasa_rec_i$"u(tasa_rec de crecimiento)"/sqrt(tasa_rec_i$n))*tasa_rec_i$t
+tasa_rec<-rbind(tasa_rec_i,tasa_rec)
+print(i)
+}
+}
+tasa_rec$`tasa_rec de crecimiento /%`<-tasa_rec$`tasa_rec de crecimiento`*100
+tasa_rec$`U(tasa_rec de crecimiento)/%, 95%`<-tasa_rec$`U(tasa_rec de crecimiento), 95%`*100
+tasa_rec$`tasa_rec de crecimiento`<-NULL
+tasa_rec$`u(tasa_rec de crecimiento)`<-NULL
+tasa_rec$`U(tasa_rec de crecimiento), 95%`<-NULL
+tasa<-left_join(tasa,tasa_rec)
+tasa
+}
+resumen_nacional()
+library(corrplot)
+library(ggplot2)
+library(lubridate)
+library(googleVis)
+library(chilemapas)
+library(scales)
+library(plotly)
+library(rgdal)
+library(leaflet)
+library(sp)
+library(rmapshaper)
+library(stringi)
+resumen_nacional<-function(){
+Poblacion<-19458310
+avance_todo_chile<-read.csv("https://raw.githubusercontent.com/MinCiencia/Datos-COVID19/master/output/producto5/TotalesNacionales.csv",header=T,check.names=F)
+avance_todo_chile<-gather(avance_todo_chile,key="Tipo de dato",value = "casos","2020-03-03":ncol(avance_todo_chile))
+avance_todo_chile<-spread(avance_todo_chile,Fecha,casos)
+colnames(avance_todo_chile)[which(names(avance_todo_chile) == "Tipo de dato")] <- "Fecha"
+avance_todo_chile$"Casos confirmados acumulados cada 100000 habitantes"<-100000*avance_todo_chile$`Casos totales`/Poblacion
+avance_todo_chile$Fecha<-as.Date(avance_todo_chile$Fecha)
+avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`<-as.numeric(avance_todo_chile$`Casos confirmados acumulados cada 100000 habitantes`)
+#plot(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,data=avance_todo_chile)
+#model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile)
+#summary(model)[["coefficients"]]
+tasa<-c()
+tasa_i<-c()
+dias<-avance_todo_chile$Fecha
+for (i in 3:length(dias)){
+if(i<=10){
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i])
+model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_i$Fecha<-dias[i]
+tasa_i<-as.data.frame(tasa_i)
+tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_i$n<-nrow(avance_todo_chile_i)
+tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
+tasa<-rbind(tasa_i,tasa)
+}else{
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
+model<-lm(log(`Casos confirmados acumulados cada 100000 habitantes`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_i$Fecha<-dias[i]
+tasa_i<-as.data.frame(tasa_i)
+tasa_i$"Tasa de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_i$"u(Tasa de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_i$n<-nrow(avance_todo_chile_i)
+tasa_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_i$"U(Tasa de crecimiento), 95%"<-(tasa_i$"u(Tasa de crecimiento)"/sqrt(tasa_i$n))*tasa_i$t
+tasa<-rbind(tasa_i,tasa)
+}
+}
+tasa$`Tasa de crecimiento /%`<-tasa$`Tasa de crecimiento`*100
+tasa$`U(Tasa de crecimiento)/%, 95%`<-tasa$`U(Tasa de crecimiento), 95%`*100
+tasa$`Tasa de crecimiento`<-NULL
+tasa$`u(Tasa de crecimiento)`<-NULL
+tasa$`U(Tasa de crecimiento), 95%`<-NULL
+tasa<-left_join(tasa,avance_todo_chile)
+tasa_rec<-c()
+tasa_rec_i<-c()
+dias<-avance_todo_chile$Fecha
+for (i in 17:length(dias)){
+if(i<=25){
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>dias[14])
+model<-lm(log(`Casos recuperados`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_rec_i$Fecha<-dias[i]
+tasa_rec_i<-as.data.frame(tasa_rec_i)
+tasa_rec_i$"tasa_rec de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_rec_i$"u(tasa_rec de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_rec_i$n<-nrow(avance_todo_chile_i)
+tasa_rec_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_rec_i$"U(tasa_rec de crecimiento), 95%"<-(tasa_rec_i$"u(tasa_rec de crecimiento)"/sqrt(tasa_rec_i$n))*tasa_rec_i$t
+tasa_rec<-rbind(tasa_rec_i,tasa_rec)
+}else{
+avance_todo_chile_i<-filter(avance_todo_chile,Fecha<=dias[i] & Fecha>=dias[i-4])
+model<-lm(log(`Casos recuperados`)~Fecha,avance_todo_chile_i)
+summary(model)
+tasa_rec_i$Fecha<-dias[i]
+tasa_rec_i<-as.data.frame(tasa_rec_i)
+tasa_rec_i$"tasa_rec de crecimiento"<-as.numeric(summary(model)[["coefficients"]][2,1])
+tasa_rec_i$"u(tasa_rec de crecimiento)"<-as.numeric(summary(model)[["coefficients"]][2,2])
+tasa_rec_i$n<-nrow(avance_todo_chile_i)
+tasa_rec_i$t<-qt(1-0.05/2,nrow(avance_todo_chile_i)-2)
+tasa_rec_i$"U(tasa_rec de crecimiento), 95%"<-(tasa_rec_i$"u(tasa_rec de crecimiento)"/sqrt(tasa_rec_i$n))*tasa_rec_i$t
+tasa_rec<-rbind(tasa_rec_i,tasa_rec)
+print(i)
+}
+}
+tasa_rec$`tasa_rec de crecimiento /%`<-tasa_rec$`tasa_rec de crecimiento`*100
+tasa_rec$`U(tasa_rec de crecimiento)/%, 95%`<-tasa_rec$`U(tasa_rec de crecimiento), 95%`*100
+tasa_rec$`tasa_rec de crecimiento`<-NULL
+tasa_rec$`u(tasa_rec de crecimiento)`<-NULL
+tasa_rec$`U(tasa_rec de crecimiento), 95%`<-NULL
+tasa<-left_join(tasa,tasa_rec)
+tasa
+}
+resumen_nacional()
+f<-resumen_nacional()
+View(f)
+avance_contagiados_nacional<-read.csv("www/tasa_crecimiento_nacional.csv",check.names = FALSE)
+avance_contagiados_nacional$Fecha<-as.Date(avance_contagiados_nacional$Fecha)
+avance_contagiados_t<-avance_contagiados_nacional
+w<-ggplot(avance_contagiados_t,aes(Fecha,`Casos confirmados acumulados cada 100000 habitantes`))+geom_point(color=Verde_oscuro)
+w<-w+ggtitle("Valor acumulado de casos confirmados por cada 100000 habitantes")
+w<-w+ylab("Valor acumulado de casos confirmados \n  por cada 100000 habitantes")
+library(plotly)
+library(xlsxjars)
+library(xlsx)
+library(dplyr)
+library(tidyr)
+library(corrplot)
+library(ggplot2)
+library(lubridate)
+library(googleVis)
+library(shiny)
+library(rgdal)
+library(leaflet)
+library(sp)
+library(sf)
+library(shinyWidgets)
+library(rmapshaper)
+library(stringr)
+library(stringi)
+library(GGally)
+library(DT)
+library(scales)
+Verde_oscuro<-rgb(73,79,14,maxColorValue=255)
+Azul_claro<-rgb(0,71,130, maxColorValue=255)
+Rojo<-rgb(143,19,14, maxColorValue=255)
+Verde_claro<-rgb(198,206,6,maxColorValue=255)
+avance_contagiados_nacional<-read.csv("www/tasa_crecimiento_nacional.csv",check.names = FALSE)
+avance_contagiados_nacional$Fecha<-as.Date(avance_contagiados_nacional$Fecha)
+avance_contagiados_t<-avance_contagiados_nacional
+w<-ggplot(avance_contagiados_t,aes(Fecha,`Casos confirmados acumulados cada 100000 habitantes`))+geom_point(color=Verde_oscuro)
+w<-w+ggtitle("Valor acumulado de casos confirmados por cada 100000 habitantes")
+w<-w+ylab("Valor acumulado de casos confirmados \n  por cada 100000 habitantes")
+w<-w+scale_x_date(breaks="weeks")
+w<-w+theme(axis.text.x = element_text(angle = 90))+theme(axis.title.y = element_text(size = 9))
+w<-ggplotly(w)
+w
+tasa_crecimiento_nacional<-read.csv("www/tasa_crecimiento_nacional.csv",check.names = FALSE)
+tasa_crecimiento_nacional$Fecha<-as.Date(tasa_crecimiento_nacional$Fecha)
+r<-ggplot(tasa_crecimiento_nacional,aes(Fecha,`Tasa de crecimiento /%`))+geom_line(color=Rojo)
+r<-r+scale_y_continuous(breaks=seq(0, 70, 5))
+r<-r+scale_x_date(breaks="weeks")
+r<-r+ggtitle("Tasa de crecimiento de casos confirmados acumulados vs tiempo")
+r<-r+theme(axis.text.x = element_text(angle = 90))
+r<-ggplotly(r)
+r
+runApp()
+runApp()
+runApp()

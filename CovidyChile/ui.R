@@ -28,7 +28,21 @@ ui <- fluidPage(
     titlePanel("COVID-19 en Chile."),
     
     tabsetPanel( 
-         
+      tabPanel("Resumen nacional",
+               sidebarLayout(
+                 sidebarPanel(
+                   div("Los datos son obtenidos del repositorio", a("GitHub", href="https://github.com/MinCiencia/Datos-COVID19"),
+                       "del Ministerio de Ciencia y Tecnología"),br(),br(),br(),br(),
+                   img(src ="logocsc.png", align = "center"),
+                   uiOutput("tab3")
+                 ),
+                 mainPanel(
+                   plotlyOutput("todos"),plotlyOutput("todos_normalizado"),br(),br(),br(),br(),
+                   plotlyOutput("var_tasa"),div("En este gráfico se presenta la tasa de crecimiento evaluada para cada día, utilizando un modelo exponencial.  Hasta el día 10 se consideraron todos los días previos, luego se tomaron en cuenta intervalos de cinco días"),br(),br(),
+                   plotlyOutput("camas_en_uso")
+                 )
+               )),
+      
         tabPanel("Casos actuales y comunas", 
                  sidebarLayout(
                    sidebarPanel(
@@ -48,47 +62,32 @@ ui <- fluidPage(
                    mainPanel(verticalLayout(
                      plotlyOutput("comunas_cada_100_mil"),br(),plotlyOutput("comunas_absoluto"),br(),br(),
                      div(strong("Estimación de la tasa de crecimiento de casos confirmados por comuna"),br(),"En la tabla a continuación se entrega una estimación 
-                  de la tasa de crecimiento del número de casos confirmados acumulados.  Esta tasa se evaluó a partir de un modelo exponencial aplicado por separado a los últimos 4 días con datos de cada comuna. Para algunas comunas no se pudo ajustar el modelo.  Se incluye la incertidumbre expandida de la tasa de crecimiento, para un intervalode covertura de un 95%, esta está asociada a los errores aleatorios del modelo.  En muchas situaciones la incertidumbre
+                  de la tasa de crecimiento del número de casos confirmados acumulados.  Esta tasa se evaluó a partir de un modelo exponencial aplicado por separado a los últimos 5 días con datos de cada comuna. Para algunas comunas no se pudo ajustar el modelo.  Se incluye la incertidumbre expandida de la tasa de crecimiento, para un intervalode covertura de un 95%, esta está asociada a los errores aleatorios del modelo.  En muchas situaciones la incertidumbre
                       no se considera y se da por seguro el valor predicho por el modelo, (en este caso la tasa), cayendo en la trampa del promedio.  Esta trampa del promedio genera un riesgo de decisión,
                       que es un sesgo de decisión. La incertidumbre puede ser menor con otro modelo, pero siempre va a estar presente. Dado que a nivel de Comuna, son pocos los datos, las incertidumbres son grandes. Por otra parte, no se ha considerado la incertidumbre del muestreo, 
                       ni las características de sensibilidad ni precisión de los exámenes. Una tasa de crecimiento de 20% implica un incremento de 20% de casos por día",
                      dataTableOutput("crecimiento"))))
-                   )),
+                   ))
         
 
-
-        
-        tabPanel("Resumen nacional",
-                 sidebarLayout(
-                   sidebarPanel(
-                     div("Los datos son obtenidos del repositorio", a("GitHub", href="https://github.com/MinCiencia/Datos-COVID19"),
-                         "del Ministerio de Ciencia y Tecnología"),br(),br(),br(),br(),
-                     img(src ="logocsc.png", align = "center"),
-                     uiOutput("tab3")
-                   ),
-                   mainPanel(
-                     plotlyOutput("todos"),plotlyOutput("todos_normalizado"),br(),br(),br(),br(),
-                     plotlyOutput("var_tasa"),div("En este gráfico se presenta la tasa de crecimiento evaluada para cada día, utilizando un modelo exponencial.  Hasta el día 10 se consideraron todos los días previos, luego se tomaron en cuenta intervalos de cinco días"),br(),br()
-                   )
-                 )),
-        
+  
    
-        tabPanel("Mundo: COVID y otros indicadores",
-                 sidebarLayout(
-                   sidebarPanel(
-                     div("Los datos son obtenidos del repositorio", a("GitHub", href="https://github.com/CSSEGISandData/COVID-19"),
-                         "de CSSE at Johns Hopkins University", "y del",a("WB Data Bank.", href="https://databank.worldbank.org/home.aspx"),"Estos últimos son los correspondientes al año 2018"),br(),br(),br(),br(),
-                     img(src ="logocsc.png", align = "center"),
-                     uiOutput("tab4")
-                   ),
-                   mainPanel(
-                     div(strong("Variación del número de fallecidos a nivel internacional, en relación con variables económicas"),"Aun cuando los valores se estabilizarán en el mediano plazo, ya es posible apreciar algunas tendencias. El círculo rojo representa a Chile."),
-                     plotOutput("matriz"),br(),br(),
-                     div(strong("Variación del número de fallecidos e infectados a nivel internacional, en relación con variables económicas y de movilidad de apple"),"Aun cuando los valores se estabilizarán en el mediano plazo, ya es posible apreciar algunas tendencias.El usuario debe seleccionar las variables. La fuente de las variables económicas es el Banco Mundial y los valores corresponden al año 2018; están fijos."),
-                     htmlOutput("distPlot")
-                     
-                   )
-                 ))
+#    tabPanel("Mundo: COVID y otros indicadores",
+#             sidebarLayout(
+#         sidebarPanel(
+#           div("Los datos son obtenidos del repositorio", a("GitHub", href="https://github.com/CSSEGISandData/COVID-19"),
+#               "de CSSE at Johns Hopkins University", "y del",a("WB Data Bank.", href="https://databank.worldbank.org/home.aspx"),"Estos últimos son los correspondientes al año 2018"),br(),br(),br(),br(),
+#           img(src ="logocsc.png", align = "center"),
+#           uiOutput("tab4")
+#         ),
+#         mainPanel(
+#           div(strong("Variación del número de fallecidos a nivel internacional, en relación con variables económicas"),"Aun cuando los valores se estabilizarán en el mediano plazo, ya es posible apreciar algunas tendencias. El círculo rojo representa a Chile."),
+#           plotOutput("matriz"),br(),br(),
+#           div(strong("Variación del número de fallecidos e infectados a nivel internacional, en relación con variables económicas y de movilidad de apple"),"Aun cuando los valores se estabilizarán en el mediano plazo, ya es posible apreciar algunas tendencias.El usuario debe seleccionar las variables. La fuente de las variables económicas es el Banco Mundial y los valores corresponden al año 2018; están fijos."),
+#           htmlOutput("distPlot")
+#             
+#         )
+#       ))
         
         
         

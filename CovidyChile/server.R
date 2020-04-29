@@ -31,6 +31,7 @@ source("casos_confirmados_comuna_con_MIN_C.R")
 source("tasa_crecimiento_comuna.R")
 source("mapa_actuales_con_MIN_C.R")
 source("indicadores_internacionales.R")
+source("camas_hospital_en_uso_con_MIN_C.R")
 
 server <- function(session,input, output) {
 
@@ -159,26 +160,40 @@ output$todos_normalizado<-renderPlotly({
   z
 })
 
-  
-###########tabPanel("Mundo: COVID y otros indicadores",
 
-datos_paises<-indicadores_internacionales()
-datos_paises$Date<-as.Date(as.character(datos_paises$Date)) 
+output$camas_en_uso<-renderPlotly({
+  camas_en_uso_hospital<-camas_en_uso_hospital()
+ z<-ggplot(camas_en_uso_hospital,aes(Fecha,camas,col=`Tipo de cama`))+geom_point(size=1)
+ z<-z+scale_x_date(breaks="weeks")+labs(y="Número de camas")
+ z<-z+ggtitle("Uso de camas hospitalarias")+ theme(legend.position="bottom")
+ z<-ggplotly(z)
+ z
+ })
+
+
+
+
+
+  
+############tabPanel("Mundo: COVID y otros indicadores",
+
+#  datos_paises<-indicadores_internacionales()
+#  datos_paises$Date<-as.Date(as.character(datos_paises$Date)) 
  
-output$distPlot<-renderGvis({gvisMotionChart(datos_paises,idvar="Country Name",timevar="Date",
-                                             xvar="Population above 65 [%]")})
+#  output$distPlot<-renderGvis({gvisMotionChart(datos_paises,idvar="Country Name",timevar="Date",
+#                                             xvar="Population above 65 [%]")})
 
-cols <-character(nrow(datos_paises))
-cols[] <-"black"
-cols[datos_paises$`Science and Tech articles`==	7121.74] <-"red"
-cols[datos_paises$`GDP per capita [USD]`==25222.53] <-"red"
-cols[datos_paises$`Population above 65 [%]`==	23.01721] <-"red"
-cols[datos_paises$`Government Effectiveness, percentil`==81.73077]<-"red"
+#  cols <-character(nrow(datos_paises))
+#  cols[] <-"black"
+#  cols[datos_paises$`Science and Tech articles`==	7121.74] <-"red"
+#  cols[datos_paises$`GDP per capita [USD]`==25222.53] <-"red"
+#  cols[datos_paises$`Population above 65 [%]`==	23.01721] <-"red"
+#  cols[datos_paises$`Government Effectiveness, percentil`==81.73077]<-"red"
 
-output$matriz <- renderPlot(
-  pairs( ~log(`Deaths per 100000 inhabitants`)+log(`Science and Tech articles`)+log(`GDP per capita [USD]`)+`Population above 65 [%]`+(`Government Effectiveness, percentil`),filter(datos_paises,Date==max(datos_paises$Date)),col=cols) 
+#  output$matriz <- renderPlot(
+#    pairs( ~log(`Deaths per 100000 inhabitants`)+log(`Science and Tech articles`)+log(`GDP per capita [USD]`)+`Population above 65 [%]`+(`Government Effectiveness, percentil`),filter(datos_paises,Date==max(datos_paises$Date)),col=cols) 
   
-)
+#  )
  
 
      
