@@ -124,7 +124,10 @@ tasa_rec$`U(tasa_rec de crecimiento), 95%`<-NULL
 tasa<-left_join(tasa,tasa_rec)
 
 tasa$"Casos activos cada 100000 habitantes"<-100000*tasa$`Casos activos`/Poblacion
-tasa$"Casos nuevos cada 100000 habitantes"<-100000*tasa$`Casos nuevos`/Poblacion
+tasa$"Casos nuevos totales cada 100000 habitantes"<-100000*tasa$`Casos nuevos totales`/Poblacion
+tasa$"Casos nuevos con sintomas cada 100000 habitantes"<-100000*tasa$`Casos nuevos con sintomas`/Poblacion
+tasa$"Casos nuevos sin sintomas cada 100000 habitantes"<-100000*tasa$`Casos nuevos sin sintomas`/Poblacion
+tasa$"Casos totales cada 100000 habitantes"<-100000*tasa$`Casos totales`/Poblacion
 tasa$"Casos recuperados cada 100000 habitantes"<-100000*tasa$`Casos recuperados`/Poblacion
 tasa$"Casos fallecidos cada 100000 habitantes"<-100000*tasa$Fallecidos/Poblacion
 
